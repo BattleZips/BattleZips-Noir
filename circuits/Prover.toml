@@ -1,3 +1,2 @@
-x = "1"
-y = "2"
-return = "3"
+hash = "0x23942ad8fd725701884f38af59cec6a4bd82066dbde202ce8695846186047017"
+ships = [ 1 ]
