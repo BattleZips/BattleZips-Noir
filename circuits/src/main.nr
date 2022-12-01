@@ -45,10 +45,10 @@ fn has_ship(coord: Field, ship_coords: [Field; 25]) -> bool {
 
 // _hash: pub Field
 fn main(hash: pub Field, ships: [Field; 15]) {
-    let _lengths: [Field; 5] = [5, 4, 3, 3, 2];
+    let lengths: [Field; 5] = [5, 4, 3, 3, 2];
     
     // Check ship ranges
-    for _i in 0..5 {
+    for i in 0..5 {
      check_ship_ranges(lengths[i], ships[i*3], ships[i*3+1], ships[i*3+2]);
     };
     check_for_collision(lengths, ships);
