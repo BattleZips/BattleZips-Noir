@@ -19,7 +19,7 @@ describe('Test Noir circuits', async () => {
     pedersen = new SinglePedersen(barretenberg);
   });
 
-  xdescribe('Test Board circuit', async () => {
+  describe('Test Board circuit', async () => {
     let acir;
     let boardCircuit;
     let prover;
@@ -330,7 +330,7 @@ describe('Test Noir circuits', async () => {
       [prover, verifier] = await setup_generic_prover_and_verifier(acir);
     });
 
-    xdescribe('Test shot range constraints', async () => {
+    describe('Test shot range constraints', async () => {
       it('Should throw error with negative value supplied for shot', async () => {
         const ships = [
           0, 5, 0,
@@ -405,7 +405,7 @@ describe('Test Noir circuits', async () => {
       });
     });
 
-    xdescribe('Test hash integrity', async () => {
+    describe('Test hash integrity', async () => {
       it('Verification should with empty string provided as hash', async () => {
         const ships = [
           0, 5, 0,
@@ -485,7 +485,7 @@ describe('Test Noir circuits', async () => {
           0, 8, 0,
           0, 9, 0
         ];
-        const shot = [0, 5];
+        const shot = [1, 9];
         const shipBuffer = pedersen.compressInputs(ships.map(coord => (Buffer.from(numToHex(coord), 'hex'))));
         const hash = `0x${shipBuffer.toString('hex')}`
         const hit = 0;
@@ -547,7 +547,7 @@ describe('Test Noir circuits', async () => {
       });
     });
 
-    xdescribe('Test valid shots', async () => {
+    describe('Test valid shots', async () => {
 
       it('Valid shot correctly declared as hit in vertical orientation', async () => {
         const ships = [
