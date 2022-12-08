@@ -1,6 +1,8 @@
 
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
+import "@nomiclabs/hardhat-ethers";
+import "hardhat-deploy-ethers";
 
 const config: HardhatUserConfig = {
   mocha: {
@@ -14,7 +16,7 @@ const config: HardhatUserConfig = {
     },
   },
   solidity: {
-    version: '0.8.15',
+    version: '0.8.10',
     settings: {
       evmVersion: 'london',
       optimizer: { enabled: true, runs: 5000 },

@@ -40,9 +40,7 @@ fn check_ship_ranges(length: u4, x: u4, y: u4, z: u4) {
 fn has_ship(coord: Field, ship_coords: [Field; 25]) -> u32 {
     let mut collisions = 0;
     for i in 0..25 {
-        if ship_coords[i] == coord {
-            collisions = collisions + 1;
-        }
+        collisions = collisions + (ship_coords[i] == coord) as u32;
     };
     collisions
 }
