@@ -66,17 +66,12 @@ contract BattleshipGame is IBattleshipGame {
 
     /// MUTABLE FUNCTIONS ///
 
-    function newGame(
-        uint256 _boardHash,
-        uint256[2] memory a,
-        uint256[2] memory b_0,
-        uint256[2] memory b_1,
-        uint256[2] memory c
-    ) external override canPlay {
-        require(
-            bv.verifyProof(a, [b_0, b_1], c, [_boardHash]),
-            "Invalid Board Config!"
-        );
+    function newGame(uint256 _boardHash, bytes calldata _proof)
+        external
+        override
+        canPlay
+    {
+        require(bv.verify(_proof), "Invalid Board Config!");
         gameIndex++;
         games[gameIndex].participants[0] = _msgSender();
         games[gameIndex].boards[0] = _boardHash;
@@ -87,15 +82,9 @@ contract BattleshipGame is IBattleshipGame {
     function joinGame(
         uint256 _game,
         uint256 _boardHash,
-        uint256[2] memory a,
-        uint256[2] memory b_0,
-        uint256[2] memory b_1,
-        uint256[2] memory c
+        bytes calldata _proof
     ) external override canPlay joinable(_game) {
-        require(
-            bv.verifyProof(a, [b_0, b_1], c, [_boardHash]),
-            "Invalid Board Config!"
-        );
+        require(bv.verify(_proof), "Invalid Board Config!");
         games[_game].participants[1] = _msgSender();
         games[_game].boards[1] = _boardHash;
         playing[_msgSender()] = _game;
@@ -118,29 +107,16 @@ contract BattleshipGame is IBattleshipGame {
         uint256 _game,
         bool _hit,
         uint256[2] memory _next,
-        uint256[2] memory a,
-        uint256[2] memory b_0,
-        uint256[2] memory b_1,
-        uint256[2] memory c
+        bytes calldata _proof
     ) external override myTurn(_game) {
         Game storage game = games[_game];
         require(game.nonce != 0, "Turn=0");
         // check proof
-        uint256 boardHash = game.boards[game.nonce % 2];
-        uint256[2] memory shot = game.shots[game.nonce - 1];
         uint256 hitInt;
         assembly {
             hitInt := _hit
         }
-        require(
-            sv.verifyProof(
-                a,
-                [b_0, b_1],
-                c,
-                [boardHash, shot[0], shot[1], hitInt]
-            ),
-            "Invalid turn proof"
-        );
+        require(sv.verify(_proof), "Invalid turn proof");
         // update game state
         game.hits[game.nonce - 1] = _hit;
         if (_hit) game.hitNonce[(game.nonce - 1) % 2]++;

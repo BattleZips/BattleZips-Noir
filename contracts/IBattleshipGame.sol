@@ -42,18 +42,11 @@ abstract contract IBattleshipGame is ERC2771Context {
      * @dev modifier canPlay
      *
      * @param _boardHash uint256 - hash of ship placement on board
-     * @param a uint256[2] - zk proof part 1
-     * @param b_0 uint256[2] - zk proof part 2 split 1
-     * @param b_1 uint256[2] - zk proof part 2 split 2
-     * @param c uint256[2] - zk proof part 3
+     * @param _proof bytes calldata - zk proof of valid board
      */
-    function newGame(
-        uint256 _boardHash,
-        uint256[2] memory a,
-        uint256[2] memory b_0,
-        uint256[2] memory b_1,
-        uint256[2] memory c
-    ) external virtual;
+    function newGame(uint256 _boardHash, bytes calldata _proof)
+        external
+        virtual;
 
     /**
      * Join existing game by uploading a valid board hash
@@ -61,18 +54,12 @@ abstract contract IBattleshipGame is ERC2771Context {
      *
      * @param _game uint256 - the nonce of the game to join
      * @param _boardHash uint256 - hash of ship placement on board
-     * @param a uint256[2] - zk proof part 1
-     * @param b_0 uint256[2] - zk proof part 2 split 1
-     * @param b_1 uint256[2] - zk proof part 2 split 2
-     * @param c uint256[2] - zk proof part 3
+     * @param _proof bytes calldata - zk proof of valid board
      */
     function joinGame(
         uint256 _game,
         uint256 _boardHash,
-        uint256[2] memory a,
-        uint256[2] memory b_0,
-        uint256[2] memory b_1,
-        uint256[2] memory c
+        bytes calldata _proof
     ) external virtual;
 
     /**
@@ -95,19 +82,13 @@ abstract contract IBattleshipGame is ERC2771Context {
      * @param _hit bool - 1 if previous shot hit and 0 otherwise
      * @param _next uint256[2] - the (x,y) coordinate to fire at after proving hit/miss
      *    - ignored if proving hit forces game over
-     * @param a uint256[2] - zk proof part 1
-     * @param b_0 uint256[2] - zk proof part 2 split 1
-     * @param b_1 uint256[2] - zk proof part 2 split 2
-     * @param c uint256[2] - zk proof part 3
+     * @param _proof bytes calldata - zk proof of valid board
      */
     function turn(
         uint256 _game,
         bool _hit,
         uint256[2] memory _next,
-        uint256[2] memory a,
-        uint256[2] memory b_0,
-        uint256[2] memory b_1,
-        uint256[2] memory c
+        bytes calldata _proof
     ) external virtual;
 
     /**

@@ -45,7 +45,7 @@ fn has_ship(coord: Field, ship_coords: [Field; 25]) -> u32 {
     collisions
 }
 
-fn main(hash: Field, ships: [Field; 15]) {
+fn main(hash: pub Field, ships: [Field; 15]) {
     let lengths: [u4; 5] = [5, 4, 3, 3, 2];
     // Check ship ranges
     for i in 0..5 {
