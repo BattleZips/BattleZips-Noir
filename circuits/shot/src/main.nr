@@ -1,15 +1,15 @@
 use dep::std;
 
-/*
-    Checks whether a shot is taken at a coordinate that contains a ship
-
-    Input:
-        lengths { [u4; 5] } - An array containing the length of every ship
-        ships { [Field; 15] } - Array that represents x and y coordinate of ships followed by orientation (horizontal / vertical)
-        shot { [Field; 2] } - Array containing the x and y coordinate of a shot
-
-    Return - A boolean value of whether or not a shot has hit a coordinate occupied by a ship
-*/
+//
+//  Checks whether a shot is taken at a coordinate that contains a ship
+//
+//  Input:
+//      lengths { [u4; 5] } - An array containing the length of every ship
+//      ships { [Field; 15] } - Array that represents x and y coordinate of ships followed by orientation (horizontal / vertical)
+//      shot { [Field; 2] } - Array containing the x and y coordinate of a shot
+//
+//  Return - A boolean value of whether or not a shot has hit a coordinate occupied by a ship
+//
 fn check_for_hit(lengths: [u4; 5], ships: [Field; 15], shot: [Field; 2]) -> bool {
     let shot_coord = shot[0] + shot[1] * 10;
     let mut hits = 0;
@@ -29,14 +29,14 @@ fn check_for_hit(lengths: [u4; 5], ships: [Field; 15], shot: [Field; 2]) -> bool
     hits > 0
 }
 
-/*
-    Circuit to determine shot validity and whether it was a hit or not
-
-    Input:
-        hash { pub Field } - Hash computed outside circuit representing current board state
-        hit { u1 } - Report on whether or not shot is a hit
-        ships { [Field: 15] } - Array that represents x and y coordinate of ships followed by orientation (horizontal / vertical) 
-*/
+//
+//  Circuit to determine shot validity and whether it was a hit or not
+//
+//  Input:
+//      hash { pub Field } - Hash computed outside circuit representing current board state
+//      hit { u1 } - Report on whether or not shot is a hit
+//      ships { [Field: 15] } - Array that represents x and y coordinate of ships followed by orientation (horizontal / vertical) 
+//
 fn main(hash: pub Field, hit: u1, ships: [Field; 15], shot: pub [Field; 2]) {
     // Lengths of all ships
    let lengths: [u4; 5] = [5, 4, 3, 3, 2];
