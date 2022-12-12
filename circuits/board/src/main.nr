@@ -9,7 +9,8 @@ use dep::std;
 //
 fn check_for_collision(lengths: [u4; 5], ships: [Field; 15]) {
     let mut collisions = 0;
-    // Array is initialized to length 25 
+    // Array is initialized to length 25 because array indices in Noir are currently restricted
+    // to comptime values. Length 25 ensures index never exceeds array bounds (index max (i * 5 + j) is 24)
     let mut ship_coords: [Field; 25] = [100; 25];
     for i in 0..5 {
         //
