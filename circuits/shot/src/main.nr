@@ -37,7 +37,7 @@ fn check_for_hit(lengths: [u4; 5], ships: [Field; 15], shot: [Field; 2]) -> bool
 //      hit { u1 } - Report on whether or not shot is a hit
 //      ships { [Field: 15] } - Array that represents x and y coordinate of ships followed by orientation (horizontal / vertical) 
 //
-fn main(hash: pub Field, hit: u1, ships: [Field; 15], shot: pub [Field; 2]) {
+fn main(hash: pub Field, hit: pub u1, ships: [Field; 15], shot: pub [Field; 2]) {
     // Lengths of all ships
    let lengths: [u4; 5] = [5, 4, 3, 3, 2];
    // Ensure shots within board boundaries
