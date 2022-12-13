@@ -12,17 +12,17 @@ function path_to_uint8array(path: string) {
 async function generateSolidityVerifier() {
     let acir;
     try {
-        let compiled_program = compile(resolve(__dirname, '../circuits/board/src/main.nr'));
+        let compiled_program = compile(resolve(__dirname, '../circuits/shot/src/main.nr'));
         acir = compiled_program.circuit;
     } catch (e: any) {
-        let acirByteArray = path_to_uint8array(path.resolve(__dirname, `../circuits/board/build/${process.argv[2]}.acir`));
+        let acirByteArray = path_to_uint8array(path.resolve(__dirname, `../circuits/shot/build/${process.argv[2]}.acir`));
         acir = acir_from_bytes(acirByteArray);
     }
     console.log("Setting up generic verifier...");
     let [_, verifier] = await setup_generic_prover_and_verifier(acir);
 
     const sc = verifier.SmartContract();
-    syncWriteFile("../contracts/BoardVerifier.sol", sc);
+    syncWriteFile("../contracts/ShotVerifier.sol", sc);
 
     console.log('Done writing Verifier contract.');
 }
