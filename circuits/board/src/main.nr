@@ -52,10 +52,10 @@ fn check_ship_ranges(length: u4, x: u4, y: u4, z: u4) {
 
         // Ensure bounds aren't exceeded in vertical or horizontal orientation
         if z == 1 {
-            constrain y + length < 10;
+            constrain y + length <= 10;
             constrain x < 10;
         } else {
-            constrain x + length < 10;
+            constrain x + length <= 10;
             constrain y < 10;
         }
 }

@@ -1,8 +1,8 @@
 {
-  "name": "nplate",
+  "name": "BattleZips-Noir",
   "version": "1.0.0",
-  "description": "A template for noir.",
-  "main": "index.js",
+  "description": "Noir implementation of BattleZips.",
+  "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -32,11 +32,12 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
-    "@noir-lang/aztec_backend": "^0.12.0",
+    "@noir-lang/aztec_backend": "^0.11.0",
     "@noir-lang/barretenberg": "^2.19.0",
     "@noir-lang/noir_wasm": "^0.10.0",
     "@openzeppelin/contracts": "^4.8.0",
     "dotenv": "^16.0.3",
-    "hardhat-deploy-ethers": "^0.3.0-beta.13"
+    "hardhat-deploy-ethers": "^0.3.0-beta.13",
+    "ipfs-http-client": "^59.0.0"
   }
 }

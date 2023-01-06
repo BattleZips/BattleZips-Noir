@@ -13,7 +13,7 @@ abstract contract IBattleshipGame is ERC2771Context {
     event Joined(uint256 _nonce, address _by);
     event Shot(uint8 _x, uint8 _y, uint256 _game);
     event Report(bool hit, uint256 _game);
-    event Won(address _winner, uint256 _nonce, address _by);
+    event Won(address _winner, uint256 _nonce);
 
     struct Game {
         address[2] participants; // the two players in the game
@@ -47,6 +47,14 @@ abstract contract IBattleshipGame is ERC2771Context {
     function newGame(uint256 _boardHash, bytes calldata _proof)
         external
         virtual;
+
+    /**
+     * Forfeit a game in the middle of playing of leave a game prior to starting
+     * @dev modifier isPlayer
+     *
+     * @param _game uint256 - nonce of the game being played
+     */
+    function leaveGame(uint256 _game) external virtual;
 
     /**
      * Join existing game by uploading a valid board hash

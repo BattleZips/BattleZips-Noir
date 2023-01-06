@@ -6,7 +6,7 @@ import "@nomiclabs/hardhat-ethers";
 import "hardhat-deploy-ethers";
 dotenv.config();
 
-const { INFURA, MNEMONIC } = process.env;
+const { ETHERSCAN_KEY, INFURA, MNEMONIC } = process.env;
 
 
 
@@ -16,7 +16,6 @@ const RPCS = {
   gnosis: 'https://rpc.gnosischain.com',
   polygon: 'https://matic-mainnet.chainstacklabs.com',
   polygonMumbai: 'https://matic-mumbai.chainstacklabs.com',
-  rinkeby: `https://rinkeby.infura.io/v3/${INFURA}`,
 }
 
 // derive 10 accounts from mnemonic
@@ -46,6 +45,11 @@ const networks = Object.entries(RPCS).reduce((obj, network) => {
 networks['hardhat'] = { accounts }
 
 const config: HardhatUserConfig = {
+  etherscan: {
+    apiKey: {
+      goerli: ETHERSCAN_KEY!
+    }
+  },
   mocha: {
     timeout: 2000000
   },

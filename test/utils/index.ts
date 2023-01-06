@@ -2,10 +2,11 @@ import { BarretenbergWasm } from '@noir-lang/barretenberg/dest/wasm';
 import { SinglePedersen } from '@noir-lang/barretenberg/dest/crypto';
 import { ethers } from 'hardhat';
 import { numToHex } from '../../utils';
-import { Contract } from 'ethers';
 
-// Boards for game test. Each board is an array of length 15. Divisible into 3 sets of 5 where
-// index 0 is x-coord, 1 is y-coord, and 2 is orientation (horizontal / vertical, 0 / 1)
+/**
+ * Boards for game test. Each board is an array of length 15. Divisible into 3 sets of 5 where
+ * index 0 is x-coord, 1 is y-coord, and 2 is orientation (horizontal / vertical, 0 / 1)
+ */
 export const boards: { [key: string]: number[] } = {
     alice: [
         0, 0, 0,
@@ -91,17 +92,4 @@ export const initialize = async (barretenberg: BarretenbergWasm, forwarder: stri
         bob: `0x${bobPedersen.toString('hex')}`
     }
     return { boardHashes, bv, game, pedersen, sv }
-}
-
-/**
- * Helper function to log status of game to the console without displaying output on multiple lines
- * 
- * @param msg Message to display in the console
- */
-export const printLog = (msg: string) => {
-    if (process.stdout.isTTY) {
-        process.stdout.clearLine(-1);
-        process.stdout.cursorTo(0);
-        process.stdout.write(msg);
-    }
 }

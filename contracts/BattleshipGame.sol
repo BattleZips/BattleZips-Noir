@@ -15,6 +15,16 @@ contract BattleshipGame is IBattleshipGame {
     }
 
     /**
+     * Determine whether message sender is a member of a created or active game
+     *
+     * @param _game uint256 - the nonce of the game to check playability for
+     */
+    modifier isPlayer(uint256 _game) {
+        require(playing[_msgSender()] == _game, "Not a player in game");
+        _;
+    }
+
+    /**
      * Determine whether message sender is allowed to call a turn function
      *
      * @param _game uint256 - the nonce of the game to check playability for
@@ -77,6 +87,21 @@ contract BattleshipGame is IBattleshipGame {
         games[gameIndex].boards[0] = _boardHash;
         playing[_msgSender()] = gameIndex;
         emit Started(gameIndex, _msgSender());
+    }
+
+    function leaveGame(uint256 _game) external override isPlayer(_game) {
+        Game storage game = games[_game];
+        // Check if game has been started with two players. If so then forfeit
+        if (game.nonce != 0) {
+            game.winner = _msgSender() == game.participants[0]
+                ? game.participants[1]
+                : game.participants[0];
+            playing[game.participants[0]] = 0;
+            playing[game.participants[1]] = 0;
+            emit Won(game.winner, _game);
+        } else {
+            playing[game.participants[0]] = 0;
+        }
     }
 
     function joinGame(
@@ -169,6 +194,8 @@ contract BattleshipGame is IBattleshipGame {
         game.winner = game.hitNonce[0] == HIT_MAX
             ? game.participants[0]
             : game.participants[1];
-        emit Won(game.winner, _game, game.winner);
+        playing[games[_game].participants[0]] = 0;
+        playing[games[_game].participants[1]] = 0;
+        emit Won(game.winner, _game);
     }
 }
