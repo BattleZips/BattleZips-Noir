@@ -4,6 +4,7 @@
   "description": "Noir implementation of BattleZips.",
   "main": "index.ts",
   "scripts": {
+    "deploy": "npx hardhat run scripts/deploy.ts --network goerli",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

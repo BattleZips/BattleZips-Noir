@@ -52,6 +52,6 @@ export const printLog = (msg: string) => {
     if (process.stdout.isTTY) {
         process.stdout.clearLine(-1);
         process.stdout.cursorTo(0);
-        process.stdout.write(msg + '\n');
+        process.stdout.write(msg);
     }
 }

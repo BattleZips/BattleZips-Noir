@@ -9,11 +9,19 @@ import "./IVerifier.sol";
  * Operates at a 5% margin on winnings (1 XDAI in from 2 players, 1.95 XDAI to winner)
  */
 abstract contract IBattleshipGame is ERC2771Context {
+    event Left(address _by, uint256 _nonce);
     event Started(uint256 _nonce, address _by);
     event Joined(uint256 _nonce, address _by);
     event Shot(uint8 _x, uint8 _y, uint256 _game);
     event Report(bool hit, uint256 _game);
     event Won(address _winner, uint256 _nonce);
+
+    enum GameStatus {
+        Joined,
+        NotStarted,
+        Over,
+        Started
+    }
 
     struct Game {
         address[2] participants; // the two players in the game
@@ -22,6 +30,7 @@ abstract contract IBattleshipGame is ERC2771Context {
         mapping(uint256 => uint256[2]) shots; // map turn number to shot coordinates
         mapping(uint256 => bool) hits; // map turn number to hit/ miss
         uint256[2] hitNonce; // track # of hits player has made
+        GameStatus status;
         address winner; // game winner
     }
 
@@ -107,6 +116,7 @@ abstract contract IBattleshipGame is ERC2771Context {
      * @return _boards uint256[2] - hashes of host and guest boards respectively
      * @return _turnNonce uint256 - the current turn number for the game
      * @return _hitNonce uint256[2] - the current number of hits host and guest have scored respectively
+     * @return _status GameStatus - status of the game
      * @return _winner address - if game is won, will show winner
      */
     function gameState(uint256 _game)
@@ -118,6 +128,7 @@ abstract contract IBattleshipGame is ERC2771Context {
             uint256[2] memory _boards,
             uint256 _turnNonce,
             uint256[2] memory _hitNonce,
+            GameStatus _status,
             address _winner
         );
 }

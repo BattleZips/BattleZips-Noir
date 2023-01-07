@@ -31,7 +31,7 @@ contract BattleshipGame is IBattleshipGame {
      */
     modifier myTurn(uint256 _game) {
         require(playing[_msgSender()] == _game, "!Playing");
-        require(games[_game].winner == address(0), "!Playable");
+        require(games[_game].status == GameStatus.Joined, "!Playable");
         address current = games[_game].nonce % 2 == 0
             ? games[_game].participants[0]
             : games[_game].participants[1];
@@ -48,9 +48,8 @@ contract BattleshipGame is IBattleshipGame {
     modifier joinable(uint256 _game) {
         require(_game != 0 && _game <= gameIndex, "out-of-bounds");
         require(
-            games[_game].participants[0] != address(0) &&
-                games[_game].participants[1] == address(0),
-            "!Open"
+            games[_game].status == GameStatus.Started,
+            "Game has two players already"
         );
         _;
     }
@@ -83,6 +82,7 @@ contract BattleshipGame is IBattleshipGame {
     {
         require(bv.verify(_proof), "Invalid Board Config!");
         gameIndex++;
+        games[gameIndex].status = GameStatus.Started;
         games[gameIndex].participants[0] = _msgSender();
         games[gameIndex].boards[0] = _boardHash;
         playing[_msgSender()] = gameIndex;
@@ -92,7 +92,7 @@ contract BattleshipGame is IBattleshipGame {
     function leaveGame(uint256 _game) external override isPlayer(_game) {
         Game storage game = games[_game];
         // Check if game has been started with two players. If so then forfeit
-        if (game.nonce != 0) {
+        if (game.status == GameStatus.Joined) {
             game.winner = _msgSender() == game.participants[0]
                 ? game.participants[1]
                 : game.participants[0];
@@ -101,7 +101,9 @@ contract BattleshipGame is IBattleshipGame {
             emit Won(game.winner, _game);
         } else {
             playing[game.participants[0]] = 0;
+            emit Left(_msgSender(), _game);
         }
+        game.status = GameStatus.Over;
     }
 
     function joinGame(
@@ -112,6 +114,7 @@ contract BattleshipGame is IBattleshipGame {
         require(bv.verify(_proof), "Invalid Board Config!");
         games[_game].participants[1] = _msgSender();
         games[_game].boards[1] = _boardHash;
+        games[_game].status = GameStatus.Joined;
         playing[_msgSender()] = _game;
         emit Joined(_game, _msgSender());
     }
@@ -167,6 +170,7 @@ contract BattleshipGame is IBattleshipGame {
             uint256[2] memory _boards,
             uint256 _turnNonce,
             uint256[2] memory _hitNonce,
+            GameStatus _status,
             address _winner
         )
     {
@@ -174,6 +178,7 @@ contract BattleshipGame is IBattleshipGame {
         _boards = games[_game].boards;
         _turnNonce = games[_game].nonce;
         _hitNonce = games[_game].hitNonce;
+        _status = games[_game].status;
         _winner = games[_game].winner;
     }
 
@@ -194,6 +199,7 @@ contract BattleshipGame is IBattleshipGame {
         game.winner = game.hitNonce[0] == HIT_MAX
             ? game.participants[0]
             : game.participants[1];
+        game.status = GameStatus.Over;
         playing[games[_game].participants[0]] = 0;
         playing[games[_game].participants[1]] = 0;
         emit Won(game.winner, _game);

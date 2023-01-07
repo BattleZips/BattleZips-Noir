@@ -234,7 +234,7 @@ describe('Play entire BattleZip game', async () => {
                 // Grab game state from the contract. Winner is the fourth value
                 const gameState = await game.gameState(2);
                 // Bob should be the winner
-                expect(gameState[4]).to.equal(bob.address);
+                expect(gameState[5]).to.equal(bob.address);
             });
 
             it('Confirm both players have exited game', async () => {
