@@ -1,11 +1,12 @@
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
+import { join } from "path";
 
 /**
  * Determine if err message can be ignored
  * @param {string} err - the error text returned from etherscan verification
  * @return true if bytecode is verified, false otherwise 
  */
-export const alreadyVerified = (err) => {
+export const alreadyVerified = (err: string) => {
     return err.includes('Reason: Already Verified')
         || err.includes('Contract source code already verified')
 }
