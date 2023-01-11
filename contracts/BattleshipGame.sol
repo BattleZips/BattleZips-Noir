@@ -4,55 +4,6 @@ pragma solidity >=0.6.0;
 import "./IBattleshipGame.sol";
 
 contract BattleshipGame is IBattleshipGame {
-    /// MODIFIERS ///
-
-    /**
-     * Ensure a message sender is not currently playing another game
-     */
-    modifier canPlay() {
-        require(playing[_msgSender()] == 0, "Reentrant");
-        _;
-    }
-
-    /**
-     * Determine whether message sender is a member of a created or active game
-     *
-     * @param _game uint256 - the nonce of the game to check playability for
-     */
-    modifier isPlayer(uint256 _game) {
-        require(playing[_msgSender()] == _game, "Not a player in game");
-        _;
-    }
-
-    /**
-     * Determine whether message sender is allowed to call a turn function
-     *
-     * @param _game uint256 - the nonce of the game to check playability for
-     */
-    modifier myTurn(uint256 _game) {
-        require(playing[_msgSender()] == _game, "!Playing");
-        require(games[_game].status == GameStatus.Joined, "!Playable");
-        address current = games[_game].nonce % 2 == 0
-            ? games[_game].participants[0]
-            : games[_game].participants[1];
-        require(_msgSender() == current, "!Turn");
-        _;
-    }
-
-    /**
-     * Make sure game is joinable
-     * Will have more conditions once shooting phase is implemented
-     *
-     * @param _game uint256 - the nonce of the game to check validity for
-     */
-    modifier joinable(uint256 _game) {
-        require(_game != 0 && _game <= gameIndex, "out-of-bounds");
-        require(
-            games[_game].status == GameStatus.Started,
-            "Game has two players already"
-        );
-        _;
-    }
 
     /// CONSTRUCTOR ///
 
@@ -73,7 +24,7 @@ contract BattleshipGame is IBattleshipGame {
         sv = IShotVerifier(_sv);
     }
 
-    /// MUTABLE FUNCTIONS ///
+    /// FUNCTIONS ///
 
     function newGame(uint256 _boardHash, bytes calldata _proof)
         external
@@ -159,7 +110,7 @@ contract BattleshipGame is IBattleshipGame {
         }
     }
 
-    /// VIEWABLE FUNCTIONS ///
+    /// VIEWS ///
 
     function gameState(uint256 _game)
         external
@@ -182,7 +133,7 @@ contract BattleshipGame is IBattleshipGame {
         _winner = games[_game].winner;
     }
 
-    /// INTERNAL FUNCTIONS ///
+    /// INTERNAL ///
 
     /**
      * Handle transitioning game to finished state & paying out
