@@ -1,7 +1,9 @@
-import fs from 'fs';
+import fs, { existsSync, mkdirSync } from 'fs';
 import { ethers } from 'hardhat';
-import { delay, printLog } from '../utils';
-import { verifyContracts } from './verify';
+import { resolve } from 'path';
+import { delay, printLog, verifyContracts } from '../utils';
+
+const DEPLOY_PATH = resolve(__dirname, '../deploy');
 
 /**
  * Main function to deploy contracts to specifcied network
@@ -26,6 +28,10 @@ async function main() {
   const gameFactory = await ethers.getContractFactory('BattleshipGame');
   const game = await gameFactory.deploy(ethers.constants.AddressZero, bv.address, sv.address);
   console.log('Battleship Game deployed to: ', game.address);
+  // Check if deploy exists, if not mkdir
+  if (!existsSync(DEPLOY_PATH)) {
+    mkdirSync(DEPLOY_PATH);
+  }
   fs.writeFileSync('deploy/contracts.json', JSON.stringify({
     BattleshipGame: game.address,
     BoardVerifier: bv.address,

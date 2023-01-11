@@ -26,10 +26,10 @@ import { numToHex } from "../utils";
     const hash = `0x${shipBuffer.toString('hex')}`
     // Convert to TOML and write witness to prover.toml and public inputs to verified
     writeFileSync('circuits/board/Prover.toml', stringify({ hash, ships }));
-    console.log('Board witness written to Prover.toml');
+    console.log('Board witness written to /board/Prover.toml');
     writeFileSync('circuits/board/Verifier.toml', stringify({
         setpub: [],
         hash,
     }));
-    console.log('Board verifier written to Verifier.toml');
+    console.log('Board verifier written to /board/Verifier.toml');
 })();

@@ -27,12 +27,12 @@ import { numToHex } from '../utils';
     const hit = 1;
     // Convert to TOML and write witness to prover.toml and public inputs to verified
     writeFileSync('circuits/shot/Prover.toml', stringify({ hash, hit, shot, ships }));
-    console.log('Shot witness written to Prover.toml');
+    console.log('Shot witness written to /shot/Prover.toml');
     writeFileSync('circuits/shot/Verifier.toml', stringify({
         setpub: [],
         hash,
         hit,
         shot
     }));
-    console.log('Shot verifier written to Verifier.toml');
+    console.log('Shot verifier written to /shot/Verifier.toml');
 })();
