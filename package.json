@@ -8,7 +8,10 @@
     "generate-frontend-files": "ts-node scripts/generateFrontendData.ts",
     "generate-witnesses": "ts-node scripts/generateBoardWitness.ts && ts-node scripts/generateShotWitness.ts",
     "verify": "hardhat run scripts/verify.ts --network goerli",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test-circuit:goerli": "hardhat test test/circuit.ts",
+    "test-circuit:local": "hardhat test test/circuit.ts --network goerli",
+    "test-game:local": "hardhat test test/game.ts",
+    "test-game:goerli": "hardhat test test/game.ts --network goerli"
   },
   "author": "",
   "license": "ISC",
