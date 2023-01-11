@@ -10,7 +10,7 @@
     "verify": "hardhat run scripts/verify.ts --network goerli",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Mach 34 <ian@mach34.space> (https://mach34.space/)",
   "license": "ISC",
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
