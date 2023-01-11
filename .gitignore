@@ -1,8 +1,11 @@
 out/
 cache/
-circuits/build/
+circuits/**/build/
 artifacts/
-circuits/proofs/
+circuits/**/proofs/
+circuits/**/Prover.toml
+circuits/**/Verifier.toml
+deploy
 # Logs
 logs
 *.log

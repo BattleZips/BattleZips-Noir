@@ -7,6 +7,7 @@ import { resolve } from 'path';
 
 const PROOFS = ['board', 'shot'];
 
+const DEPLOY_PATH = resolve(__dirname, '../deploy');
 const FRONTEND_PATH = resolve(__dirname, '../deploy/frontend');
 
 const WASM_PATHS = [
@@ -47,6 +48,10 @@ const WASM_PATHS = [
 
         // Check if frontend directory exists, if not then create
         if (!existsSync(FRONTEND_PATH)) {
+            // If it doesn't exist check deploy path first
+            if (!existsSync(DEPLOY_PATH)) {
+                mkdirSync(DEPLOY_PATH);
+            }
             mkdirSync(FRONTEND_PATH);
         };
 

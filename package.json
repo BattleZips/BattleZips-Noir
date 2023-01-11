@@ -7,8 +7,11 @@
     "deploy": "hardhat run scripts/deploy.ts --network goerli",
     "generate-frontend-files": "ts-node scripts/generateFrontendData.ts",
     "generate-witnesses": "ts-node scripts/generateBoardWitness.ts && ts-node scripts/generateShotWitness.ts",
-    "verify": "hardhat run scripts/verify.ts --network goerli",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test-circuit": "hardhat test test/circuit.ts",
+    "test-circuit:goerli": "hardhat test test/circuit.ts --network goerli",
+    "test-game": "hardhat test test/game.ts",
+    "test-game:goerli": "hardhat test test/game.ts --network goerli",
+    "verify": "hardhat run scripts/verify.ts --network goerli"
   },
   "author": "Mach 34 <ian@mach34.space> (https://mach34.space/)",
   "license": "ISC",
