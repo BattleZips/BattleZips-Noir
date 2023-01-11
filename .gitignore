@@ -1,8 +1,9 @@
 out/
 cache/
-circuits/build/
+circuits/*/build/
 artifacts/
-circuits/proofs/
+circuits/*/proofs/
+deploy
 # Logs
 logs
 *.log
