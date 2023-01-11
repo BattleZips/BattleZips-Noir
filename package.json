@@ -7,11 +7,11 @@
     "deploy": "hardhat run scripts/deploy.ts --network goerli",
     "generate-frontend-files": "ts-node scripts/generateFrontendData.ts",
     "generate-witnesses": "ts-node scripts/generateBoardWitness.ts && ts-node scripts/generateShotWitness.ts",
-    "verify": "hardhat run scripts/verify.ts --network goerli",
-    "test-circuit:goerli": "hardhat test test/circuit.ts",
-    "test-circuit:local": "hardhat test test/circuit.ts --network goerli",
-    "test-game:local": "hardhat test test/game.ts",
-    "test-game:goerli": "hardhat test test/game.ts --network goerli"
+    "test-circuit": "hardhat test test/circuit.ts",
+    "test-circuit:goerli": "hardhat test test/circuit.ts --network goerli",
+    "test-game": "hardhat test test/game.ts",
+    "test-game:goerli": "hardhat test test/game.ts --network goerli",
+    "verify": "hardhat run scripts/verify.ts --network goerli"
   },
   "author": "",
   "license": "ISC",
