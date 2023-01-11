@@ -6,15 +6,18 @@ import "./IVerifier.sol";
 
 /**
  * Abstraction for Zero-Knowledge Battleship Game
- * Operates at a 5% margin on winnings (1 XDAI in from 2 players, 1.95 XDAI to winner)
  */
 abstract contract IBattleshipGame is ERC2771Context {
+    /// EVENTS ///
+
     event Left(address _by, uint256 _nonce);
     event Started(uint256 _nonce, address _by);
     event Joined(uint256 _nonce, address _by);
     event Shot(uint8 _x, uint8 _y, uint256 _game);
     event Report(bool hit, uint256 _game);
     event Won(address _winner, uint256 _nonce);
+
+    /// STRUCTS ///
 
     enum GameStatus {
         Joined,
@@ -30,10 +33,11 @@ abstract contract IBattleshipGame is ERC2771Context {
         mapping(uint256 => uint256[2]) shots; // map turn number to shot coordinates
         mapping(uint256 => bool) hits; // map turn number to hit/ miss
         uint256[2] hitNonce; // track # of hits player has made
-        GameStatus status;
+        GameStatus status; // game lifecycle tracker
         address winner; // game winner
     }
 
+    /// VARIABLES ///
     uint256 public constant HIT_MAX = 17; // number of hits before all ships are sunk
 
     uint256 public gameIndex; // current game nonce
@@ -45,6 +49,56 @@ abstract contract IBattleshipGame is ERC2771Context {
 
     IBoardVerifier bv; // verifier for proving initial board rule compliance
     IShotVerifier sv; // verifier for proving shot hit/ miss
+
+    /// MODIFIERS ///
+
+    /**
+     * Ensure a message sender is not currently playing another game
+     */
+    modifier canPlay() {
+        require(playing[_msgSender()] == 0, "Reentrant");
+        _;
+    }
+
+    /**
+     * Determine whether message sender is a member of a created or active game
+     *
+     * @param _game uint256 - the nonce of the game to check playability for
+     */
+    modifier isPlayer(uint256 _game) {
+        require(playing[_msgSender()] == _game, "Not a player in game");
+        _;
+    }
+
+    /**
+     * Determine whether message sender is allowed to call a turn function
+     *
+     * @param _game uint256 - the nonce of the game to check playability for
+     */
+    modifier myTurn(uint256 _game) {
+        require(playing[_msgSender()] == _game, "!Playing");
+        require(games[_game].status == GameStatus.Joined, "!Playable");
+        address current = games[_game].nonce % 2 == 0
+            ? games[_game].participants[0]
+            : games[_game].participants[1];
+        require(_msgSender() == current, "!Turn");
+        _;
+    }
+
+    /**
+     * Make sure game is joinable
+     * Will have more conditions once shooting phase is implemented
+     *
+     * @param _game uint256 - the nonce of the game to check validity for
+     */
+    modifier joinable(uint256 _game) {
+        require(_game != 0 && _game <= gameIndex, "out-of-bounds");
+        require(
+            games[_game].status == GameStatus.Started,
+            "Game has two players already"
+        );
+        _;
+    }
 
     /**
      * Start a new board by uploading a valid board hash
