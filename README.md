@@ -23,7 +23,7 @@ This repo was created using the [nplate](https://github.com/whitenois3/nplate) N
   - [Board Circuit](#board-circuit)
   - [Shot Circuit](#shot-circuit)
 - [Setup](#ciruit-structure)
-  1. [Download Nargo the Noir CLI Tool (Optional)](#setup-1)
+  1. [Download Noir](#setup-1)
   2. [Clone Repository](#setup-2)
   3. [Install Dependencies](#setup-3)
   4. [Prove and Verify With Nargo (Optional)](#setup-4)
@@ -73,7 +73,13 @@ Two circuits comprise the project; a game instantiation proof in the form of Boa
   - A private `Field` array of length 15. Every three elements in the array should be deserialized into the tuple `(x, y, z)` for a ship's placement. X is the x-coordinate of the board tile, y is the y-coordinate, and z is a binary value (0 / 1) determining whether or not the ship is placed in a horizontal (0) or vertical orientation (1). Ships order is deterministically [carrier, battleship, cruiser, submarine, destroyer] -> [5, 4, 3, 3, 2]
     Note: As Noir does not yet support multidimensional arrays, the length 15 array was chosen to proceed. This will likely be changed to a 2D array of lengths `[5][3]` when possible in Noir
 
-The board circuit establishes whether ships have been placed correctly on a player's board. The board is abstracted from a `10x10` grid where a coordinate on the board can be thought of as an `(x, y)` point (where x and y values range from `0..9`. i.e. top left is `(0, 0)` and bottom right is `(9,9)`. The proof first checks to see that all ships are in board boundaries by ensuring none of the ship coordinates are greater than 9 or less than 0. It will then check whether or not there are any collisions where ships are placed on the same coordinates. Lastly, it will compute the Pedersen hash of all ship positions internally in the proof and ensure the computed cash equals the public input.
+The board circuit establishes whether ships have been placed correctly on a player's board. The board is abstracted from a `10x10` grid where a coordinate on the board can be thought of as an `(x, y)` point (where x and y values range from `0..9`. i.e. top left is `(0, 0)` and bottom right is `(9,9)`.
+
+<p align="center">
+<img width="350" height="350" src="battlezips_board_example.png">
+</p>
+
+The proof first checks to see that all ships are in board boundaries by ensuring none of the ship coordinates are greater than 9 or less than 0. It will then check whether or not there are any collisions where ships are placed on the same coordinates. Lastly, it will compute the Pedersen hash of all ship positions internally in the proof and ensure the computed cash equals the public input.
 
 ### [Shot Circuit](https://github.com/BattleZips/BattleZips-Noir/blob/main/circuits/shot/src/main.nr) <a name="shot-circuit" />
 
@@ -94,7 +100,7 @@ This circuit will first ensure that the shot coordinates fall within the bounds 
 
 The following steps will help guide you through how you would set up BattleZips-Noir from scratch, and can be used for reference when setting up arbitrary circuits
 
-### 1. Download Nargo the Noir CLI Tool (Optional) <a name="setup-1" />
+### 1. Download Noir to Local Machine <a name="setup-1" />
 
 #### Option 1: Binaries
 
