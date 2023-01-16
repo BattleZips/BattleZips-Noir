@@ -23,7 +23,7 @@ This repo was created using the [nplate](https://github.com/whitenois3/nplate) N
   - [Board Circuit](#board-circuit)
   - [Shot Circuit](#shot-circuit)
 - [Setup](#ciruit-structure)
-  1. [Download Noir](#setup-1)
+  1. [Download Nargo the Noir CLI Tool (Optional)](#setup-1)
   2. [Clone Repository](#setup-2)
   3. [Install Dependencies](#setup-3)
   4. [Prove and Verify With Nargo (Optional)](#setup-4)
@@ -100,7 +100,7 @@ This circuit will first ensure that the shot coordinates fall within the bounds 
 
 The following steps will help guide you through how you would set up BattleZips-Noir from scratch, and can be used for reference when setting up arbitrary circuits
 
-### 1. Download Noir to Local Machine <a name="setup-1" />
+### 1. Download Nargo the Noir CLI Tool (Optional) <a name="setup-1" />
 
 #### Option 1: Binaries
 
