@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "deploy": "hardhat run scripts/deploy.ts --network goerli",
+    "generate-contracts": "hardhat run scripts/generateContracts.ts",
     "generate-frontend-files": "ts-node scripts/generateFrontendData.ts",
     "generate-witnesses": "ts-node scripts/generateBoardWitness.ts && ts-node scripts/generateShotWitness.ts",
     "test-circuit": "hardhat test test/circuit.ts",

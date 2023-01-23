@@ -1,8 +1,7 @@
-import { resolve, join } from 'path';
 import { compile, acir_from_bytes } from '@noir-lang/noir_wasm';
 import { setup_generic_prover_and_verifier } from '@noir-lang/barretenberg/dest/client_proofs';
 import { writeFileSync } from 'fs';
-import path from 'path';
+import path, { resolve, join } from 'path';
 import { pathToUint8Array } from '../utils';
 
 /**
