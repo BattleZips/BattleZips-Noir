@@ -28,7 +28,7 @@ abstract contract IBattleshipGame is ERC2771Context {
 
     struct Game {
         address[2] participants; // the two players in the game
-        uint256[2] boards; // mimcsponge hash of board placement for each player
+        uint256[2] boards; // pedersen hash of board placement for each player
         uint256 nonce; // turn #
         mapping(uint256 => uint256[2]) shots; // map turn number to shot coordinates
         mapping(uint256 => bool) hits; // map turn number to hit/ miss
