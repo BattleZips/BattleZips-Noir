@@ -4,7 +4,6 @@ pragma solidity >=0.6.0;
 import "./IBattleshipGame.sol";
 
 contract BattleshipGame is IBattleshipGame {
-
     /// CONSTRUCTOR ///
 
     /**
@@ -87,7 +86,7 @@ contract BattleshipGame is IBattleshipGame {
         bool _hit,
         uint256[2] memory _next,
         bytes calldata _proof
-    ) external override myTurn(_game) {
+    ) external override myTurn(_game) uniqueShot(_game, _next) {
         Game storage game = games[_game];
         require(game.nonce != 0, "Turn=0");
         // check proof
@@ -105,6 +104,13 @@ contract BattleshipGame is IBattleshipGame {
         else {
             // add next shot
             game.shots[game.nonce] = _next;
+            uint8 serializedShot = (
+                games[_game].participants[0] == _msgSender() ? 0 : 100
+            ) +
+                uint8(_shot[0]) +
+                uint8(_shot[1]) *
+                10;
+            game.shotNullifiers[];
             game.nonce++;
             emit Shot(uint8(_next[0]), uint8(_next[1]), _game);
         }
