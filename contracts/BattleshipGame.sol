@@ -89,11 +89,6 @@ contract BattleshipGame is IBattleshipGame {
     ) external override myTurn(_game) uniqueShot(_game, _next) {
         Game storage game = games[_game];
         require(game.nonce != 0, "Turn=0");
-        // check proof
-        uint256 hitInt;
-        assembly {
-            hitInt := _hit
-        }
         require(sv.verify(_proof), "Invalid turn proof");
         // update game state
         game.hits[game.nonce - 1] = _hit;
@@ -104,13 +99,14 @@ contract BattleshipGame is IBattleshipGame {
         else {
             // add next shot
             game.shots[game.nonce] = _next;
-            uint8 serializedShot = (
-                games[_game].participants[0] == _msgSender() ? 0 : 100
-            ) +
-                uint8(_shot[0]) +
-                uint8(_shot[1]) *
+            uint8 shotPadding = games[_game].participants[0] == _msgSender()
+                ? 0
+                : 100;
+            uint8 serializedShot = shotPadding +
+                uint8(_next[0]) +
+                uint8(_next[1]) *
                 10;
-            game.shotNullifiers[];
+            game.shotNullifiers[serializedShot] = true;
             game.nonce++;
             emit Shot(uint8(_next[0]), uint8(_next[1]), _game);
         }
