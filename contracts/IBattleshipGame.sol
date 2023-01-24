@@ -32,6 +32,7 @@ abstract contract IBattleshipGame is ERC2771Context {
         uint256 nonce; // turn #
         mapping(uint256 => uint256[2]) shots; // map turn number to shot coordinates
         mapping(uint256 => bool) hits; // map turn number to hit/ miss
+        mapping(uint8 => bool) shotNullifiers; // Ensure shots are only made once
         uint256[2] hitNonce; // track # of hits player has made
         GameStatus status; // game lifecycle tracker
         address winner; // game winner
@@ -96,6 +97,28 @@ abstract contract IBattleshipGame is ERC2771Context {
         require(
             games[_game].status == GameStatus.Started,
             "Game has two players already"
+        );
+        _;
+    }
+
+    /**
+     * Ensure no player in the game is allowed to take a shot that was already made.
+     * If player is participant[0] then add zero to shot serialization, if participant[1]
+     * then add 100
+     *
+     * @param _game uint256 - the nonce of the game to check validity for
+     * @param _shot uint256[2] - shot made
+     */
+    modifier uniqueShot(uint256 _game, uint256[2] memory _shot) {
+        uint8 serializedShot = (
+            games[_game].participants[0] == _msgSender() ? 0 : 100
+        ) +
+            uint8(_shot[0]) +
+            uint8(_shot[1]) *
+            10;
+        require(
+            !games[_game].shotNullifiers[serializedShot],
+            "Shot already taken!"
         );
         _;
     }
