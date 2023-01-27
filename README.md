@@ -19,7 +19,7 @@ This repo was created using the [nplate](https://github.com/whitenois3/nplate) N
 - [Get in Touch](#get-in-touch)
 - [Related Repositories](#related-repositories)
 - [Noir Links](#noir-links)
-- [Circuit Struncture](#ciruit-structure)
+- [Circuit Structure](#ciruit-structure)
   - [Board Circuit](#board-circuit)
   - [Shot Circuit](#shot-circuit)
 - [Setup](#ciruit-structure)

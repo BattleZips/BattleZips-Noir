@@ -91,7 +91,7 @@ describe('Play entire BattleZip game', async () => {
         [shotProver, shotVerifier] = await setup_generic_prover_and_verifier(shotAcir);
     });
 
-    xdescribe("Play game to completion", async () => {
+    describe("Play game to completion", async () => {
         it("Start a new game", async () => {
 
             // Create board inputs for Alice's board proof
@@ -184,7 +184,7 @@ describe('Play entire BattleZip game', async () => {
     });
 
 
-    xdescribe("Test forfeit functionality", () => {
+    describe("Test forfeit functionality", () => {
         it("Start a new game", async () => {
 
             // Create board inputs for Alice's board proof
@@ -250,7 +250,7 @@ describe('Play entire BattleZip game', async () => {
         });
     })
 
-    xdescribe("Test leaving game that has not been started", () => {
+    describe("Test leaving game that has not been started", () => {
         it("Start a new game", async () => {
 
             // Create board inputs for Alice's board proof
@@ -314,7 +314,7 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove on-chain hash is of valid board configuration for Bob
             await (await game.connect(bob).joinGame(
-                1,
+                4,
                 boardHashes.bob,
                 proof
             )).wait()
@@ -322,7 +322,7 @@ describe('Play entire BattleZip game', async () => {
 
         it("opening shot", async () => {
             // Alice takes first turn in game with opening shot. No proof needed
-            await (await game.connect(alice).firstTurn(1, [1, 0])).wait()
+            await (await game.connect(alice).firstTurn(4, [1, 0])).wait()
         });
 
         it("Bob shot successful: [8, 9]", async () => {
@@ -340,7 +340,7 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove alice's registered shot hit, and register bob's next shot
             expect((await game.connect(bob).turn(
-                1, // Game id
+                4, // Game id
                 false, // Hit bool
                 [8, 9], // Returning fire / next shot to register (not part of proof)
                 proof
@@ -362,7 +362,7 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove alice's registered shot hit, and register bob's next shot
             expect((await game.connect(alice).turn(
-                1, // Game id
+                4, // Game id
                 false, // Hit bool
                 [7, 7], // Returning fire / next shot to register (not part of proof)
                 proof
@@ -384,7 +384,7 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove alice's registered shot hit, and register bob's next shot
             expect((await game.connect(bob).turn(
-                1, // Game id
+                4, // Game id
                 false, // Hit bool
                 [8, 8], // Returning fire / next shot to register (not part of proof)
                 proof
@@ -406,7 +406,7 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove alice's registered shot hit, and register bob's next shot
             expect((await game.connect(alice).turn(
-                1, // Game id
+                4, // Game id
                 false, // Hit bool
                 [7, 8], // Returning fire / next shot to register (not part of proof)
                 proof
@@ -428,7 +428,7 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove alice's registered shot hit, and register bob's next shot
             expect(game.connect(bob).turn(
-                1, // Game id
+                4, // Game id
                 false, // Hit bool
                 [8, 9], // Returning fire / next shot to register (not part of proof)
                 proof
@@ -450,7 +450,7 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove alice's registered shot hit, and register bob's next shot
             expect((await game.connect(bob).turn(
-                1, // Game id
+                4, // Game id
                 false, // Hit bool
                 [8, 7], // Returning fire / next shot to register (not part of proof)
                 proof
@@ -472,7 +472,7 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove alice's registered shot hit, and register bob's next shot
             expect(game.connect(alice).turn(
-                1, // Game id
+                4, // Game id
                 false, // Hit bool
                 [7, 7], // Returning fire / next shot to register (not part of proof)
                 proof
