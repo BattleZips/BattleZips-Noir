@@ -45,7 +45,7 @@ Check out the following links to provide feedback or ask questions!
 
 ## Related Repositories <a name="related-repositories" />
 
-- [BattleZips-Noir Frontend](https://github.com/Ian-Bright/BattleZips-Noir-frontend)
+- [BattleZips-Noir Frontend](https://github.com/BattleZips/BattleZips-Noir-frontend)
 - [BattleZips Subgraph](https://github.com/BattleZips/battlezip-subgraph)
 
 ## Noir Links <a name="noir-links" />
