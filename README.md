@@ -154,14 +154,17 @@ nargo compile <arbitray_file_name>
 
 The acir will be written to `build/<arbitray_file_name>.acir` In the BattleZips-Noir tests we generate the acir with typescript so the step above is not necessary to have generated acir for testing. Still useful to know though!
 
-### 5. Update .env <a name="setup-5" />
+### 5. Get API keys and update .env <a name="setup-5" />
 
-Add the following variables to your .env file:
+- Create accounts on [etherscan](https://etherscan.io/) and [infura](https://app.infura.io) and get respective API keys.
+- Generate a mnemonic, use the derivation path m/44'/60'/0'/0 (same as Metamask) to get the address that will be used as deployer. Fund that account (i.e. using a faucet like [goerli faucet](https://goerlifaucet.com/))
+
+Rename .env.example to .env and update with the relevant values:
 
 ```
-ETHERSCAN_KEY=<val>
-INFURA=<val>
-MNEMONIC=<val>
+ETHERSCAN_KEY=<an etherscan API key>
+INFURA=<an infura API key>
+MNEMONIC=<the mnemonic for your account>
 ```
 
 ### 6. Run Tests <a name="setup-6" />
@@ -169,17 +172,17 @@ MNEMONIC=<val>
 Run test for the circuits with the following command:
 
 ```
-test-circuit # runs locally
+yarn test-circuit # runs locally
 ---
-test-circuit:goerli # runs on goerli
+yarn test-circuit:goerli # runs on goerli
 ```
 
 to test the BattleshipGame contracts with Verifier contracts linked in run:
 
 ```
-test-game # runs locally
+yarn test-game # runs locally
 ---
-test-game:goerli # runs on goerli
+yarn test-game:goerli # runs on goerli
 ```
 
 ### 7. Deploy and Verify Contracts <a name="setup-7" />
