@@ -9,10 +9,28 @@ dotenv.config();
 
 const { ETHERSCAN_KEY, INFURA, MNEMONIC } = process.env;
 
+interface iAccounts {
+  mnemonic: string,
+  path: string,
+  initialIndex: number,
+  count: number,
+}
+
+interface iRPCs {
+  [key: string]: string;
+}
+
+interface iNetworks {
+  [key: string]: {
+    url?: string,
+    accounts: iAccounts
+  };
+}
+
 
 
 // map of chain to rpc url 
-const RPCS = {
+const RPCS : iRPCs = {
   goerli: `https://goerli.infura.io/v3/${INFURA}`,
   gnosis: 'https://rpc.gnosischain.com',
   polygon: 'https://matic-mainnet.chainstacklabs.com',
@@ -20,8 +38,8 @@ const RPCS = {
 }
 
 // derive 10 accounts from mnemonic
-const accounts = {
-  mnemonic: MNEMONIC,
+const accounts : iAccounts = {
+  mnemonic: MNEMONIC as unknown as string,
   path: "m/44'/60'/0'/0",
   initialIndex: 0,
   count: 10,
@@ -31,14 +49,14 @@ const accounts = {
  * Return a hardhat network object for a given network
  * @param {string} network - the name of the hardhat network
  */
-const makeNetwork = (network) => {
+const makeNetwork = (network : string) => {
   return {
     url: RPCS[network],
     accounts
   }
 }
 
-const networks = Object.entries(RPCS).reduce((obj, network) => {
+const networks = Object.entries(RPCS).reduce((obj : iNetworks, network) => {
   obj[network[0]] = makeNetwork(network[0]);
   return obj;
 }, {})

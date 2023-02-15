@@ -7,9 +7,11 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "useUnknownInCatchVariables": false,
   },
   "include": [
-    "src", "modules.d.ts"
+    "src", "modules.d.ts", "./scripts"
   ],
+  "files": ["./hardhat.config.ts"]
 }
