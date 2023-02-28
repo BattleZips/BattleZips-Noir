@@ -2,7 +2,9 @@ out/
 cache/
 circuits/**/build/
 artifacts/
+circuits/**/contract/
 circuits/**/proofs/
+circuits/**/target/
 circuits/**/Prover.toml
 circuits/**/Verifier.toml
 deploy

@@ -1,14 +1,12 @@
 import {
-  create_proof,
+  BarretenbergWasm, create_proof,
   setup_generic_prover_and_verifier,
-  verify_proof,
-} from '@noir-lang/barretenberg/dest/client_proofs';
-import { BarretenbergWasm } from '@noir-lang/barretenberg/dest/wasm';
-import { SinglePedersen } from '@noir-lang/barretenberg/dest/crypto';
+  SinglePedersen, verify_proof
+} from '@noir-lang/barretenberg';
 import { compile } from '@noir-lang/noir_wasm';
 import { expect } from 'chai';
 import { resolve } from 'path';
-import { numToHex } from '../utils';
+import { generateAcirFromNargo, numToHex } from '../utils';
 
 describe('Test Noir circuits', async () => {
   let barretenberg;
@@ -21,14 +19,17 @@ describe('Test Noir circuits', async () => {
 
   describe('Test Board circuit', async () => {
     let acir;
-    let boardCircuit;
     let prover;
     let verifier;
 
     before(async () => {
       console.log('Generating Board circuit...');
-      boardCircuit = compile(resolve(__dirname, '../circuits/board/src/main.nr'));
-      acir = boardCircuit.circuit;
+      // Compile board cirucit in typescript
+      // const boardCircuit = compile(resolve(__dirname, '../circuits/board/src/main.nr'));
+      // acir = boardCircuit.circuit;
+
+      // Generate acir from nargo
+      acir = generateAcirFromNargo('board');
       [prover, verifier] = await setup_generic_prover_and_verifier(acir);
     });
 
@@ -320,13 +321,16 @@ describe('Test Noir circuits', async () => {
   describe('Test shot circuit', async () => {
     let acir;
     let prover;
-    let shotCircuit;
     let verifier;
 
     before(async () => {
       console.log('Generating Shot circuit...');
-      shotCircuit = compile(resolve(__dirname, '../circuits/shot/src/main.nr'));
-      acir = shotCircuit.circuit;
+      // Compile shot cirucit in typescript
+      // const shotCircuit = compile(resolve(__dirname, '../circuits/shot/src/main.nr'));
+      // acir = shotCircuit.circuit;
+
+      acir = generateAcirFromNargo('shot');
+
       [prover, verifier] = await setup_generic_prover_and_verifier(acir);
     });
 

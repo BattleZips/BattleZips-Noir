@@ -7,7 +7,7 @@ import "@nomiclabs/hardhat-ethers";
 import "hardhat-deploy-ethers";
 dotenv.config();
 
-const { ETHERSCAN_KEY, INFURA, MNEMONIC } = process.env;
+const { ETHERSCAN, POLYGONSCAN, INFURA, MNEMONIC } = process.env;
 
 interface iAccounts {
   mnemonic: string,
@@ -30,7 +30,7 @@ interface iNetworks {
 
 
 // map of chain to rpc url 
-const RPCS : iRPCs = {
+const RPCS: iRPCs = {
   goerli: `https://goerli.infura.io/v3/${INFURA}`,
   gnosis: 'https://rpc.gnosischain.com',
   polygon: 'https://matic-mainnet.chainstacklabs.com',
@@ -38,7 +38,7 @@ const RPCS : iRPCs = {
 }
 
 // derive 10 accounts from mnemonic
-const accounts : iAccounts = {
+const accounts: iAccounts = {
   mnemonic: MNEMONIC as unknown as string,
   path: "m/44'/60'/0'/0",
   initialIndex: 0,
@@ -49,14 +49,14 @@ const accounts : iAccounts = {
  * Return a hardhat network object for a given network
  * @param {string} network - the name of the hardhat network
  */
-const makeNetwork = (network : string) => {
+const makeNetwork = (network: string) => {
   return {
     url: RPCS[network],
     accounts
   }
 }
 
-const networks = Object.entries(RPCS).reduce((obj : iNetworks, network) => {
+const networks = Object.entries(RPCS).reduce((obj: iNetworks, network) => {
   obj[network[0]] = makeNetwork(network[0]);
   return obj;
 }, {})
@@ -66,7 +66,9 @@ networks['hardhat'] = { accounts }
 const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
-      goerli: ETHERSCAN_KEY!
+      goerli: ETHERSCAN!,
+      polygon: POLYGONSCAN!,
+      polygonMumbai: POLYGONSCAN!
     }
   },
   mocha: {

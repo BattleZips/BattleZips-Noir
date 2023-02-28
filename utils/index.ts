@@ -1,5 +1,8 @@
-import { readFileSync } from "fs";
+import { acir_read_bytes } from "@noir-lang/noir_wasm";
+import { execSync } from "child_process";
+import { existsSync, readFileSync, rmSync } from "fs";
 import { ethers, run } from 'hardhat';
+import { resolve } from "path";
 
 /**
  * Determine if err message can be ignored
@@ -19,6 +22,26 @@ export const alreadyVerified = (err: string) => {
  */
 export const delay = async (time: number): Promise<unknown> => {
     return new Promise(res => setTimeout(res, time))
+}
+
+/**
+ * Helper function to generate acir from nargo using child process
+ */
+export const generateAcirFromNargo = (dir: string) => {
+    const pathToCircuitDir = resolve(__dirname, `../circuits/${dir}`);
+
+    // Generate acir and compile from acir
+
+    // If target directory exists then remove
+
+    if (existsSync(`${pathToCircuitDir}/target`)) {
+        console.log(`Target directory already exists for ${dir}, removing`)
+        rmSync(`${pathToCircuitDir}/target`, { recursive: true, force: true });
+    }
+    execSync('nargo compile p', { cwd: pathToCircuitDir });
+    console.log(`Compiled acir for ${dir}`);
+    const acirBytes = pathToUint8Array(`${pathToCircuitDir}/target/p.acir.acir`);
+    return acir_read_bytes(acirBytes);
 }
 
 /**

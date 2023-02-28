@@ -1,15 +1,15 @@
-import { BarretenbergWasm } from '@noir-lang/barretenberg/dest/wasm';
 import {
+    BarretenbergWasm,
     create_proof,
     setup_generic_prover_and_verifier,
     verify_proof,
-} from '@noir-lang/barretenberg/dest/client_proofs';
+} from '@noir-lang/barretenberg';
 import { compile } from '@noir-lang/noir_wasm';
 import { ethers } from 'hardhat';
 import { expect } from 'chai';
 import { resolve } from 'path';
 import { boards, initialize, shots } from './utils';
-import { printLog } from '../utils';
+import { generateAcirFromNargo, printLog } from '../utils';
 
 describe('Play entire BattleZip game', async () => {
     let alice, bob; // Players
@@ -85,9 +85,11 @@ describe('Play entire BattleZip game', async () => {
         ({ boardHashes, game, } = await initialize(barretenberg, ethers.constants.AddressZero))
 
         // Create prover and verifier for board and shot proofs
-        boardAcir = compile(resolve(__dirname, '../circuits/board/src/main.nr')).circuit;
+        // boardAcir = compile(resolve(__dirname, '../circuits/board/src/main.nr')).circuit; // typescript compilation
+        boardAcir = generateAcirFromNargo('board'); // nargo compilation
         [boardProver, boardVerifier] = await setup_generic_prover_and_verifier(boardAcir);
-        shotAcir = compile(resolve(__dirname, '../circuits/shot/src/main.nr')).circuit;
+        // shotAcir = compile(resolve(__dirname, '../circuits/shot/src/main.nr')).circuit; // typescript compilation
+        shotAcir = generateAcirFromNargo('shot'); // nargo compilation
         [shotProver, shotVerifier] = await setup_generic_prover_and_verifier(shotAcir);
     });
 

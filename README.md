@@ -205,7 +205,7 @@ npm run verify
 
 ### 8. Generate Frontend Files <a name="setup-8" />
 
-The Aztec Backend packages required for generating proofs do not currently work perfectly in frontend generated using [create-react-app](https://create-react-app.dev/). In order to get things to run we need to pass over the acir and circuit files for a specific circuit as well as port over the corresponding wasm files to the aztec backend packages. The process has been simplified to one command. All that needs to be run in the root directory of the app is:
+In order to get things to run in the frontend generated using [create-react-app](https://create-react-app.dev/) we need to pass over each circuit representation in acir. The process has been simplified to one command. All that needs to be run in the root directory of the app is:
 
 ```
 yarn generate-frontend-files
@@ -213,7 +213,7 @@ yarn generate-frontend-files
 npm run generate-frontend-files
 ```
 
-This command will generate an acir and circuit file for each specified proof as well as copy the the `@noir-lang` package wasm files out from `node_modules`. These files will then get written to a subdirectory of [deploy]("https://github.com/BattleZips/BattleZips-Noir/tree/main/deploy") called `frontend`. From here they can simply be copied to the public directory of the [BattleZips-Noir frontend]("https://github.com/Ian-Bright/BattleZips-Noir-frontend")
+This command will generate an acir file for each specified proof. These files will then get written to a subdirectory of [deploy]("https://github.com/BattleZips/BattleZips-Noir/tree/main/deploy") called `frontend`. From here they can simply be copied to the public directory of the [BattleZips-Noir frontend]("https://github.com/Ian-Bright/BattleZips-Noir-frontend")
 
 ### Important Note
 
