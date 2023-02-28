@@ -32,8 +32,8 @@ fn check_for_collision(lengths: [u4; 5], ships: [Field; 15]) {
                 collisions = collisions + has_ship(coord, ship_coords);
                 ship_coords[index] = coord;
             }
-        };
-    };
+        }
+    }
     constrain collisions == 0;
 }
 
@@ -73,7 +73,7 @@ fn has_ship(coord: Field, ship_coords: [Field; 25]) -> u32 {
     let mut collisions = 0;
     for i in 0..25 {
         collisions = collisions + (ship_coords[i] == coord) as u32;
-    };
+    }
     collisions
 }
 
@@ -90,7 +90,7 @@ fn main(hash: pub Field, ships: [Field; 15]) {
     // Check ship ranges
     for i in 0..5 {
      check_ship_ranges(lengths[i], ships[i*3] as u4, ships[i*3+1] as u4, ships[i*3+2] as u4);
-    };
+    }
     // Ensure ships have valid placement and do not share coordinates with each other
     check_for_collision(lengths, ships);
     // Check integrity of ship hash
