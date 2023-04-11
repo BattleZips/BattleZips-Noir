@@ -34,7 +34,7 @@ This repo was created using the [nplate](https://github.com/whitenois3/nplate) N
 
 ## Video Series <a name="video-series" />
 
-[youtube](https://www.youtube.com/playlist?list=PLWACGbvIsEgnR2aUCr9i-PpmTVhF5Zuik)
+[BattleZips-Noir Video Series](https://www.youtube.com/playlist?list=PLWACGbvIsEgnR2aUCr9i-PpmTVhF5Zuik)
 
 ## Get In Touch <a name="get-in-touch" />
 
