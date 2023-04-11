@@ -25,11 +25,10 @@ contract BattleshipGame is IBattleshipGame {
 
     /// FUNCTIONS ///
 
-    function newGame(uint256 _boardHash, bytes calldata _proof)
-        external
-        override
-        canPlay
-    {
+    function newGame(
+        uint256 _boardHash,
+        bytes calldata _proof
+    ) external override canPlay {
         require(bv.verify(_proof), "Invalid Board Config!");
         gameIndex++;
         games[gameIndex].status = GameStatus.Started;
@@ -69,11 +68,10 @@ contract BattleshipGame is IBattleshipGame {
         emit Joined(_game, _msgSender());
     }
 
-    function firstTurn(uint256 _game, uint256[2] memory _shot)
-        external
-        override
-        myTurn(_game)
-    {
+    function firstTurn(
+        uint256 _game,
+        uint256[2] memory _shot
+    ) external override myTurn(_game) {
         Game storage game = games[_game];
         require(game.nonce == 0, "!Turn1");
         game.shots[game.nonce] = _shot;
@@ -114,7 +112,9 @@ contract BattleshipGame is IBattleshipGame {
 
     /// VIEWS ///
 
-    function gameState(uint256 _game)
+    function gameState(
+        uint256 _game
+    )
         external
         view
         override
@@ -156,5 +156,59 @@ contract BattleshipGame is IBattleshipGame {
         playing[games[_game].participants[0]] = 0;
         playing[games[_game].participants[1]] = 0;
         emit Won(game.winner, _game);
+    }
+
+    /**
+     * Helper method for extracting public inputs from a noir proof
+     * @dev public inputs are serialized in 32 byte slots at the front of a proof string
+     *
+     * @param _proof bytes - the proof string to extract public inputs from
+     * @param index uint256 - the index of the public input to extract
+     */
+    function extractPublicInput(
+        bytes memory _proof,
+        uint256 index
+    ) public pure returns (bytes32 result) {
+        assembly {
+            result := mload(add(add(_proof, 32), mul(index, 32)))
+        }
+    }
+
+    /**
+     * Extracts the public inputs from a Board proof
+     * [0] = board commitment (hash)
+     *
+     * @param _proof bytes - the proof string to extract public inputs from
+     * @return commitment bytes32 - board hash exported as a public input
+     */
+    function boardPublicInputs(
+        bytes memory _proof
+    ) public pure returns (bytes32 commitment) {
+        return extractPublicInput(_proof, 0);
+    }
+
+    /**
+     * Extracts the public inputs from a Shot proof
+     * [0] = board commitment (hash), [1] = hit assertion, [2] = shot x coord, [3] = shot y coord
+     *
+     * @param _proof bytes - the proof string to extract public inputs from
+     * @return commitment bytes32 - board hash exported as a public input
+     * @return hit bool - hit assertion exported as a public input
+     * @return x uint8 - shot x coord exported as a public input
+     * @return y uint8 - shot y coord exported as a public input
+     */
+    function shotPublicInputs(
+        bytes memory _proof
+    ) public pure returns (bytes32 commitment, bool hit, uint8 x, uint8 y) {
+        commitment = extractPublicInput(_proof, 0);
+        bytes32 _hit = extractPublicInput(_proof, 1);
+        bytes32 _x = extractPublicInput(_proof, 2);
+        bytes32 _y = extractPublicInput(_proof, 3);
+        assembly {
+            hit := iszero(iszero(_hit))
+            x := and(_x, 0xff)
+            y := and(_y, 0xff)
+        }
+        return (commitment, hit, x, y);
     }
 }

@@ -102,6 +102,13 @@ describe('Play entire BattleZip game', async () => {
 
             // Generate board proof for Alice
             const proof = await create_proof(boardProver, boardAcir, abi);
+            console.log("pp", proof.length)
+
+            // verify the existence of the public input (board hash)
+            let pub_input = proof.slice(0, 32);
+            let board_hash = Buffer.from(boardHashes.alice.slice(2), "hex");
+            expect(pub_input).to.be.deep.equal(board_hash);
+
             // Verify board proof locally
             await verify_proof(boardVerifier, proof);
 
