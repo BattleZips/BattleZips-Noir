@@ -119,7 +119,7 @@ describe('Play entire BattleZip game', async () => {
                 hash: boardHashes.bob,
                 ships: boards.bob,
             }
-            // Compute witness and run through groth16 circuit for proof / signals
+            // create noir proof of Bob's board
             const proof = await create_proof(boardProver, boardAcir, abi);
 
             // Verify proof locally
@@ -209,7 +209,7 @@ describe('Play entire BattleZip game', async () => {
                 hash: boardHashes.bob,
                 ships: boards.bob,
             }
-            // Compute witness and run through groth16 circuit for proof / signals
+            // create noir proof of bob's board
             const proof = await create_proof(boardProver, boardAcir, abi);
 
             // Verify proof locally
@@ -299,7 +299,7 @@ describe('Play entire BattleZip game', async () => {
                 hash: boardHashes.bob,
                 ships: boards.bob,
             }
-            // Compute witness and run through groth16 circuit for proof / signals
+            // create noir proof of Bob's board
             const proof = await create_proof(boardProver, boardAcir, abi);
 
             // Verify proof locally
@@ -386,8 +386,21 @@ describe('Play entire BattleZip game', async () => {
                 ships: boards.alice,
             });
             await (await game.connect(alice).newGame(proof)).wait();
-            
-            // join game as alice
+            // Compute witness and run through noir 
+            const proof = await create_proof(boardProver, boardAcir, {
+                hash: boardHashes.bob,
+                ships: boards.bob,
+            });
+
+            // Verify proof locally
+            await verify_proof(boardVerifier, proof);
+
+
+            // Prove on-chain hash is of valid board configuration for Bob
+            await (await game.connect(bob).joinGame(
+                gameIndex,
+                proof
+            )).wait()
         })
         // it("Start a new game", async () => {
         //     // Create board inputs for Alice's board proof
@@ -411,8 +424,8 @@ describe('Play entire BattleZip game', async () => {
         //         hash: boardHashes.bob,
         //         ships: boards.bob,
         //     }
-        //     // Compute witness and run through groth16 circuit for proof / signals
-        //     const proof = await create_proof(boardProver, boardAcir, abi);
+        // create noir proof of Bob's board
+        const proof = await create_proof(boardProver, boardAcir, abi);
 
         //     // Verify proof locally
         //     await verify_proof(boardVerifier, proof);
