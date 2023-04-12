@@ -281,9 +281,9 @@ describe('Play entire BattleZip game', async () => {
     //     });
     // });
 
-    describe("Test shot uniqueness", () => {
+    describe("Test shot nullification", () => {
+        const gameIndex = 1;
         it("Start a new game", async () => {
-
             // Create board inputs for Alice's board proof
             const abi = {
                 hash: boardHashes.alice,
@@ -316,162 +316,74 @@ describe('Play entire BattleZip game', async () => {
 
             // Prove on-chain hash is of valid board configuration for Bob
             await (await game.connect(bob).joinGame(
-                4,
+                gameIndex,
                 proof
             )).wait()
         });
 
         it("opening shot", async () => {
             // Alice takes first turn in game with opening shot. No proof needed
-            await (await game.connect(alice).firstTurn(4, [1, 0])).wait()
+            await (await game.connect(alice).firstTurn(gameIndex, [1, 0])).wait()
         });
 
-        it("Bob shot successful: [8, 9]", async () => {
-            let abi = {
-                hash: boardHashes.alice,
-                hit: 0,
-                ships: boards.alice,
-                shot: [8, 9],
-            }
-
-            // Create proof of shot
-            let proof = await create_proof(shotProver, shotAcir, abi);
-            // Verify shot proof locally
-            await verify_proof(shotVerifier, proof);
-
-            // Prove alice's registered shot hit, and register bob's next shot
-            expect((await game.connect(bob).turn(
-                4, // Game id
-                [8, 9], // Returning fire / next shot to register (not part of proof)
-                proof
-            )).wait()).to.not.be.reverted;
+        it("Bob and alice can make valid shots", async () => {
+            await simulateTurn(1);
         });
 
-        it("Alice shot successful: [7, 7]", async () => {
+        it("Bob cannot make a shot twice", async () => {
+            // Noir abi to verify alice's previous shot against bob's board
             let abi = {
                 hash: boardHashes.bob,
-                hit: 0,
+                hit: 1,
                 ships: boards.bob,
-                shot: [7, 7],
+                shot: shots.alice[1],
             }
 
             // Create proof of shot
             let proof = await create_proof(shotProver, shotAcir, abi);
-            // Verify shot proof locally
             await verify_proof(shotVerifier, proof);
 
-            // Prove alice's registered shot hit, and register bob's next shot
-            expect((await game.connect(alice).turn(
-                4, // Game id
-                [7, 7], // Returning fire / next shot to register (not part of proof)
-                proof
-            )).wait()).to.not.be.reverted;
-        });
-
-        it("Bob shot successful: [8, 8]", async () => {
-            let abi = {
-                hash: boardHashes.alice,
-                hit: 0,
-                ships: boards.alice,
-                shot: [8, 8],
-            }
-
-            // Create proof of shot
-            let proof = await create_proof(shotProver, shotAcir, abi);
-            // Verify shot proof locally
-            await verify_proof(shotVerifier, proof);
-
-            // Prove alice's registered shot hit, and register bob's next shot
-            expect((await game.connect(bob).turn(
-                4, // Game id
-                [8, 8], // Returning fire / next shot to register (not part of proof)
-                proof
-            )).wait()).to.not.be.reverted;
-        });
-
-        it("Alice shot successful: [7, 8]", async () => {
-            let abi = {
-                hash: boardHashes.bob,
-                hit: 0,
-                ships: boards.bob,
-                shot: [7, 8],
-            }
-
-            // Create proof of shot
-            let proof = await create_proof(shotProver, shotAcir, abi);
-            // Verify shot proof locally
-            await verify_proof(shotVerifier, proof);
-
-            // Prove alice's registered shot hit, and register bob's next shot
-            expect((await game.connect(alice).turn(
-                4, // Game id
-                [7, 8], // Returning fire / next shot to register (not part of proof)
-                proof
-            )).wait()).to.not.be.reverted;
-        });
-
-        it("Bob shot duplicate failure: [8, 9]", async () => {
-            let abi = {
-                hash: boardHashes.alice,
-                hit: 0,
-                ships: boards.alice,
-                shot: [8, 9],
-            }
-
-            // Create proof of shot
-            let proof = await create_proof(shotProver, shotAcir, abi);
-            // Verify shot proof locally
-            await verify_proof(shotVerifier, proof);
-
-            // Prove alice's registered shot hit, and register bob's next shot
+            // Fail the transaction that employs a previously used shot
             expect(game.connect(bob).turn(
                 4, // Game id
-                [8, 9], // Returning fire / next shot to register (not part of proof)
+                shots.bob[0], // reuse shot coordinates from bob's previous turn
                 proof
-            )).to.be.revertedWith('Shot already taken!');
+            )).to.be.revertedWith('Nullifier');
         });
 
-        it("Bob shot successful: [8, 7]", async () => {
-            let abi = {
-                hash: boardHashes.alice,
-                hit: 0,
-                ships: boards.alice,
-                shot: [8, 7],
-            }
-
-            // Create proof of shot
-            let proof = await create_proof(shotProver, shotAcir, abi);
-            // Verify shot proof locally
-            await verify_proof(shotVerifier, proof);
-
-            // Prove alice's registered shot hit, and register bob's next shot
-            expect((await game.connect(bob).turn(
-                4, // Game id
-                [8, 7], // Returning fire / next shot to register (not part of proof)
-                proof
-            )).wait()).to.not.be.reverted;
-        });
-
-        it("Alice shot duplicate failure: [7, 7]", async () => {
+        it("Alice cannot make a shot twice", async () => {
+            // advance valid shot by bob
             let abi = {
                 hash: boardHashes.bob,
-                hit: 0,
+                hit: 1,
                 ships: boards.bob,
-                shot: [7, 7],
+                shot: shots.alice[1],
+            }
+            let proof = await create_proof(shotProver, shotAcir, abi);
+            await (await game.connect(bob).turn(
+                1, // Game id
+                shots.bob[1], // Returning fire / next shot to register (not part of proof)
+                proof
+            )).wait()
+
+            // Noir abi to verify bob's previous shot against alice's board
+            abi = {
+                hash: boardHashes.bob,
+                hit: 1,
+                ships: boards.bob,
+                shot: shots.alice[1],
             }
 
             // Create proof of shot
-            let proof = await create_proof(shotProver, shotAcir, abi);
-            // Verify shot proof locally
+            proof = await create_proof(shotProver, shotAcir, abi);
             await verify_proof(shotVerifier, proof);
 
-            // Prove alice's registered shot hit, and register bob's next shot
+            // Fail the transaction that employs a previously used shot
             expect(game.connect(alice).turn(
-                4, // Game id
-                [7, 7], // Returning fire / next shot to register (not part of proof)
+                gameIndex,
+                shots.alice[1], // reuse shot coordinates
                 proof
-            )).to.be.revertedWith('Shot already taken!');
+            )).to.be.revertedWith('Nullifier');
         });
-
     });
 });
