@@ -25,16 +25,21 @@ contract BattleshipGame is IBattleshipGame {
 
     /// FUNCTIONS ///
 
-    function newGame(
-        uint256 _boardHash,
-        bytes calldata _proof
-    ) external override canPlay {
+    function newGame(bytes memory _proof) external override canPlay {
+        // verify integrity of board configuration
         require(bv.verify(_proof), "Invalid Board Config!");
+        // extract board commitment from public inputs to enforce shot proof inputs against
+        bytes32 commitment;
+        assembly {
+            commitment := mload(add(_proof, 32))
+        }
+        // instantate new game storage
         gameIndex++;
         games[gameIndex].status = GameStatus.Started;
         games[gameIndex].participants[0] = _msgSender();
-        games[gameIndex].boards[0] = _boardHash;
+        games[gameIndex].boards[0] = commitment;
         playing[_msgSender()] = gameIndex;
+        // mark game as started
         emit Started(gameIndex, _msgSender());
     }
 
@@ -57,14 +62,20 @@ contract BattleshipGame is IBattleshipGame {
 
     function joinGame(
         uint256 _game,
-        uint256 _boardHash,
-        bytes calldata _proof
+        bytes memory _proof
     ) external override canPlay joinable(_game) {
         require(bv.verify(_proof), "Invalid Board Config!");
+        // extract board commitment from public inputs to enforce shot proof inputs against
+        bytes32 commitment;
+        assembly {
+            commitment := mload(add(_proof, 32))
+        }
+        // update game storage to join game
         games[_game].participants[1] = _msgSender();
-        games[_game].boards[1] = _boardHash;
+        games[_game].boards[1] = commitment;
         games[_game].status = GameStatus.Joined;
         playing[_msgSender()] = _game;
+        // mark game as started
         emit Joined(_game, _msgSender());
     }
 
@@ -76,37 +87,57 @@ contract BattleshipGame is IBattleshipGame {
         require(game.nonce == 0, "!Turn1");
         game.shots[game.nonce] = _shot;
         game.nonce++;
-        emit Shot(uint8(_shot[0]), uint8(_shot[1]), _game);
+        emit Shot(_shot[0], _shot[1], _game);
     }
 
     function turn(
         uint256 _game,
-        bool _hit,
         uint256[2] memory _next,
-        bytes calldata _proof
-    ) external override myTurn(_game) uniqueShot(_game, _next) {
+        bytes memory _proof
+    ) external override myTurn(_game) nullified(_game, _next) {
+        // check valid game
         Game storage game = games[_game];
-        require(game.nonce != 0, "Turn=0");
-        require(sv.verify(_proof), "Invalid turn proof");
-        // update game state
-        game.hits[game.nonce - 1] = _hit;
-        if (_hit) game.hitNonce[(game.nonce - 1) % 2]++;
-        emit Report(_hit, _game);
+        require(game.nonce != 0, "!turn");
+
+        // check proof uses player's board commitment
+        require(
+            checkCommitment(_proof, game.boards[game.nonce % 2]),
+            "!commitment"
+        );
+
+        // check proof uses previous shot
+        require(
+            checkShot(_proof, game.shots[game.nonce - 1]),
+            "Wrong shot coordinates"
+        );
+
+        // check proof
+        require(sv.verify(_proof), "!shot_proof");
+
+        // get constrained hit/miss
+        bool hit;
+        assembly {
+            hit := mload(add(_proof, 64))
+        }
+
+        // increment hit nonce if hit
+        if (hit) game.hitNonce[(game.nonce - 1) % 2]++;
+
+        // report the hit/ miss
+        // @todo: only report if hit
+        emit Report(hit, _game);
+
         // check if game over
         if (game.hitNonce[(game.nonce - 1) % 2] >= HIT_MAX) gameOver(_game);
         else {
             // add next shot
             game.shots[game.nonce] = _next;
-            uint8 shotPadding = games[_game].participants[0] == _msgSender()
-                ? 0
-                : 100;
-            uint8 serializedShot = shotPadding +
-                uint8(_next[0]) +
-                uint8(_next[1]) *
-                10;
-            game.shotNullifiers[serializedShot] = true;
+            // set shot (serialized '10y + x') nullifier for given player
+            game.nullifiers[_next[0] + _next[1] * 10][game.nonce % 2] = true;
+            // increment game nonce
             game.nonce++;
-            emit Shot(uint8(_next[0]), uint8(_next[1]), _game);
+            // emit shot coordinates for indexing
+            emit Shot(_next[0], _next[1], _game);
         }
     }
 
@@ -120,7 +151,7 @@ contract BattleshipGame is IBattleshipGame {
         override
         returns (
             address[2] memory _participants,
-            uint256[2] memory _boards,
+            bytes32[2] memory _boards,
             uint256 _turnNonce,
             uint256[2] memory _hitNonce,
             GameStatus _status,
@@ -159,56 +190,41 @@ contract BattleshipGame is IBattleshipGame {
     }
 
     /**
-     * Helper method for extracting public inputs from a noir proof
-     * @dev public inputs are serialized in 32 byte slots at the front of a proof string
+     * Checks that the commitment in a proof is the same as a given commitment
+     * @dev board commitment is stored in the first 32 bytes of a proof string
      *
      * @param _proof bytes - the proof string to extract public inputs from
-     * @param index uint256 - the index of the public input to extract
+     * @param _commitment bytes32 - the commitment to compare against extracted value
+     * @return ok bool - true if commitments match
      */
-    function extractPublicInput(
+    function checkCommitment(
         bytes memory _proof,
-        uint256 index
-    ) public pure returns (bytes32 result) {
+        bytes32 _commitment
+    ) internal returns (bool ok) {
         assembly {
-            result := mload(add(add(_proof, 32), mul(index, 32)))
+            let commitment := mload(add(_proof, 32))
+            ok := eq(commitment, _commitment)
         }
     }
 
     /**
-     * Extracts the public inputs from a Board proof
-     * [0] = board commitment (hash)
+     * Checks that the commitment in a proof is the same as a given commitment
+     * @dev board commitment is stored in the 3rd (x) and 4th (y) 32 byte slots of a proof string
      *
      * @param _proof bytes - the proof string to extract public inputs from
-     * @return commitment bytes32 - board hash exported as a public input
+     * @param shot uint256[2] - the shot to compare against extracted values
+     * @return ok bool - true if commitments match
      */
-    function boardPublicInputs(
-        bytes memory _proof
-    ) public pure returns (bytes32 commitment) {
-        return extractPublicInput(_proof, 0);
-    }
-
-    /**
-     * Extracts the public inputs from a Shot proof
-     * [0] = board commitment (hash), [1] = hit assertion, [2] = shot x coord, [3] = shot y coord
-     *
-     * @param _proof bytes - the proof string to extract public inputs from
-     * @return commitment bytes32 - board hash exported as a public input
-     * @return hit bool - hit assertion exported as a public input
-     * @return x uint8 - shot x coord exported as a public input
-     * @return y uint8 - shot y coord exported as a public input
-     */
-    function shotPublicInputs(
-        bytes memory _proof
-    ) public pure returns (bytes32 commitment, bool hit, uint8 x, uint8 y) {
-        commitment = extractPublicInput(_proof, 0);
-        bytes32 _hit = extractPublicInput(_proof, 1);
-        bytes32 _x = extractPublicInput(_proof, 2);
-        bytes32 _y = extractPublicInput(_proof, 3);
+    function checkShot(
+        bytes memory _proof,
+        uint256[2] memory shot
+    ) internal returns (bool ok) {
         assembly {
-            hit := iszero(iszero(_hit))
-            x := and(_x, 0xff)
-            y := and(_y, 0xff)
+            let x := mload(add(_proof, 96))
+            let y := mload(add(_proof, 128))
+            let x_ok := eq(x, mload(shot))
+            let y_ok := eq(y, mload(add(shot, 32)))
+            ok := and(y_ok, x_ok)
         }
-        return (commitment, hit, x, y);
     }
 }
