@@ -9,7 +9,7 @@ contract BattleshipGame is IBattleshipGame {
     /**
      * Construct new instance of Battleship manager
      *
-     * @param _forwarder address - the address of the erc2771 trusted forwarder
+     * @param _forwarder address - the address of the erc2771 trusted forwarder (NOT RELATED TO NOIR)
      * @param _bv address - the address of the initial board validity prover
      * @param _sv address - the address of the shot hit/miss prover
      */
