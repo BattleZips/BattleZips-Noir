@@ -13,7 +13,7 @@ abstract contract IBattleshipGame is ERC2771Context {
     event Left(address _by, uint256 _nonce);
     event Started(uint256 _nonce, address _by);
     event Joined(uint256 _nonce, address _by);
-    event Shot(uint8 _x, uint8 _y, uint256 _game);
+    event Shot(uint256 _x, uint256 _y, uint256 _game);
     event Report(bool hit, uint256 _game);
     event Won(address _winner, uint256 _nonce);
 
@@ -28,11 +28,10 @@ abstract contract IBattleshipGame is ERC2771Context {
 
     struct Game {
         address[2] participants; // the two players in the game
-        uint256[2] boards; // pedersen hash of board placement for each player
+        bytes32[2] boards; // pedersen hash of board placement for each player
         uint256 nonce; // turn #
         mapping(uint256 => uint256[2]) shots; // map turn number to shot coordinates
-        mapping(uint256 => bool) hits; // map turn number to hit/ miss
-        mapping(uint8 => bool) shotNullifiers; // Ensure shots are only made once
+        mapping(uint256 => bool[2]) nullifiers; // Ensure shots are only made once
         uint256[2] hitNonce; // track # of hits player has made
         GameStatus status; // game lifecycle tracker
         address winner; // game winner
@@ -102,24 +101,22 @@ abstract contract IBattleshipGame is ERC2771Context {
     }
 
     /**
-     * Ensure no player in the game is allowed to take a shot that was already made.
-     * If player is participant[0] then add zero to shot serialization, if participant[1]
-     * then add 100
+     * Ensure shots are not nullified for a given player in a given game
      *
      * @param _game uint256 - the nonce of the game to check validity for
-     * @param _shot uint256[2] - shot made
+     * @param _shot uint256[2] - shot to check for nullification
      */
-    modifier uniqueShot(uint256 _game, uint256[2] memory _shot) {
-        uint8 serializedShot = (
-            games[_game].participants[0] == _msgSender() ? 0 : 100
-        ) +
-            uint8(_shot[0]) +
-            uint8(_shot[1]) *
-            10;
-        require(
-            !games[_game].shotNullifiers[serializedShot],
-            "Shot already taken!"
-        );
+    modifier nullified(uint256 _game, uint256[2] memory _shot) {
+        // serialize shot coordinates
+        uint256 serialized = _shot[0] + _shot[1] * 10;
+        // determine turn (must be run after isPlayer() to be safe)
+        uint256 playerIndex = games[_game].participants[0] == _msgSender()
+            ? 0
+            : 1;
+        // access shot nullifier
+        bool nullifier = games[_game].nullifiers[serialized][playerIndex];
+        // ensure shot is not nullified
+        require(!nullifier, "Nullifer");
         _;
     }
 
@@ -127,12 +124,9 @@ abstract contract IBattleshipGame is ERC2771Context {
      * Start a new board by uploading a valid board hash
      * @dev modifier canPlay
      *
-     * @param _boardHash uint256 - hash of ship placement on board
      * @param _proof bytes calldata - zk proof of valid board
      */
-    function newGame(uint256 _boardHash, bytes calldata _proof)
-        external
-        virtual;
+    function newGame(bytes calldata _proof) external virtual;
 
     /**
      * Forfeit a game in the middle of playing of leave a game prior to starting
@@ -147,14 +141,9 @@ abstract contract IBattleshipGame is ERC2771Context {
      * @dev modifier canPlay joinable
      *
      * @param _game uint256 - the nonce of the game to join
-     * @param _boardHash uint256 - hash of ship placement on board
      * @param _proof bytes calldata - zk proof of valid board
      */
-    function joinGame(
-        uint256 _game,
-        uint256 _boardHash,
-        bytes calldata _proof
-    ) external virtual;
+    function joinGame(uint256 _game, bytes calldata _proof) external virtual;
 
     /**
      * Player 0 can makes first shot without providing proof
@@ -171,16 +160,13 @@ abstract contract IBattleshipGame is ERC2771Context {
      * @dev modifier myTurn
      * @notice once first turn is called, repeatedly calling this function drives game
      *         to completion state. Loser will always be last to call this function and end game.
-     *
      * @param _game uint256 - the nonce of the game to play turn in
-     * @param _hit bool - 1 if previous shot hit and 0 otherwise
      * @param _next uint256[2] - the (x,y) coordinate to fire at after proving hit/miss
      *    - ignored if proving hit forces game over
      * @param _proof bytes calldata - zk proof of valid board
      */
     function turn(
         uint256 _game,
-        bool _hit,
         uint256[2] memory _next,
         bytes calldata _proof
     ) external virtual;
@@ -190,19 +176,21 @@ abstract contract IBattleshipGame is ERC2771Context {
      *
      * @param _game uint256 - nonce of game to look for
      * @return _participants address[2] - addresses of host and guest players respectively
-     * @return _boards uint256[2] - hashes of host and guest boards respectively
+     * @return _boards bytes32[2] - hashes of host and guest boards respectively
      * @return _turnNonce uint256 - the current turn number for the game
      * @return _hitNonce uint256[2] - the current number of hits host and guest have scored respectively
      * @return _status GameStatus - status of the game
      * @return _winner address - if game is won, will show winner
      */
-    function gameState(uint256 _game)
+    function gameState(
+        uint256 _game
+    )
         external
         view
         virtual
         returns (
             address[2] memory _participants,
-            uint256[2] memory _boards,
+            bytes32[2] memory _boards,
             uint256 _turnNonce,
             uint256[2] memory _hitNonce,
             GameStatus _status,
