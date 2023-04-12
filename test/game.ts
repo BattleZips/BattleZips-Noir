@@ -142,7 +142,7 @@ describe('Play entire BattleZip game', async () => {
 
         it("opening shot", async () => {
             // Alice takes first turn in game with opening shot. No proof needed
-            await (await game.connect(alice).firstTurn(gameIndex, [1, 0])).wait()
+            await (await game.connect(alice).firstTurn(gameIndex, shots.alice[0])).wait()
         });
 
         it('Prove hit/ miss for 32 turns', async () => {
@@ -153,7 +153,6 @@ describe('Play entire BattleZip game', async () => {
         });
 
         it('Alice wins on sinking all of Bob\'s ships', async () => {
-
             // Bob's shot hit/miss integrity proof public / private inputs
             const abi = {
                 hash: boardHashes.bob,
@@ -224,7 +223,7 @@ describe('Play entire BattleZip game', async () => {
 
         it("opening shot", async () => {
             // Alice takes first turn in game with opening shot. No proof needed
-            await (await game.connect(alice).firstTurn(gameIndex, [1, 0])).wait()
+            await (await game.connect(alice).firstTurn(gameIndex, shots.alice[0])).wait()
         });
 
         it("Forfeit as Alice after first shot, confirm game winner", async () => {
@@ -315,7 +314,7 @@ describe('Play entire BattleZip game', async () => {
 
         it("opening shot", async () => {
             // Alice takes first turn in game with opening shot. No proof needed
-            await (await game.connect(alice).firstTurn(gameIndex, [1, 0])).wait()
+            await (await game.connect(alice).firstTurn(gameIndex, shots.alice[0])).wait()
         });
 
         it("Bob and alice can make valid shots", async () => {
@@ -373,6 +372,9 @@ describe('Play entire BattleZip game', async () => {
                 shots.alice[1], // reuse shot coordinates
                 proof
             )).to.be.revertedWith('Nullifier');
+
+            // leave game for next test
+            await (await game.connect(alice).leaveGame(gameIndex)).wait();
         });
     });
 
@@ -380,69 +382,71 @@ describe('Play entire BattleZip game', async () => {
         const gameIndex = 5;
 
         before(async () => {
+            // leave previous game
             // create new game as alice
-            const proof = await create_proof(boardProver, boardAcir, {
+            let proof = await create_proof(boardProver, boardAcir, {
                 hash: boardHashes.alice,
                 ships: boards.alice,
             });
             await (await game.connect(alice).newGame(proof)).wait();
-            // Compute witness and run through noir 
-            const proof = await create_proof(boardProver, boardAcir, {
+            // join game as bob
+            proof = await create_proof(boardProver, boardAcir, {
                 hash: boardHashes.bob,
                 ships: boards.bob,
             });
-
-            // Verify proof locally
-            await verify_proof(boardVerifier, proof);
-
-
-            // Prove on-chain hash is of valid board configuration for Bob
             await (await game.connect(bob).joinGame(
                 gameIndex,
                 proof
-            )).wait()
+            )).wait();
+            // opening shot as alice
+            await (await game.connect(alice).firstTurn(gameIndex, shots.alice[0])).wait();
         })
-        // it("Start a new game", async () => {
-        //     // Create board inputs for Alice's board proof
-        //     const abi = {
-        //         hash: boardHashes.alice,
-        //         ships: boards.alice,
-        //     };
 
-        //     // Generate board proof for Alice
-        //     const proof = await create_proof(boardProver, boardAcir, abi);
-        //     // Verify board proof locally
-        //     await verify_proof(boardVerifier, proof);
+        it("Cannot prove a shot against a different board than registered", async () => {
+            // Create proof of Alice's shot on Bob's board
+            let proof = await create_proof(shotProver, shotAcir, {
+                hash: boardHashes.alice, // different board commitment than bob registered
+                hit: 1, // produces a hit on this board config
+                ships: boards.alice, // use a different board than bob registered
+                shot: shots.alice[0], // use the shot previously registered by alice
+            });
 
-        //     // Create new Battleship Game with Alice's board proof
-        //     await (await game.connect(alice).newGame(proof)).wait();
-        // });
+            // Transaction should fail since bob is not using registered board commitment
+            expect(game.connect(bob).turn(
+                gameIndex,
+                shots.bob[0], // Returning fire / next shot to register (not part of proof)
+                proof
+            )).to.be.revertedWith('!commitment');            
+        })
 
-        // it("Join an existing game", async () => {
-        //     // Create board inputs for Bob's board proof
-        //     const abi = {
-        //         hash: boardHashes.bob,
-        //         ships: boards.bob,
-        //     }
-        // create noir proof of Bob's board
-        const proof = await create_proof(boardProver, boardAcir, abi);
+        it("Cannot prove with a different shot than registered by Bob in previous turn", async () => {
+            // advance game with bob's turn
+            let proof = await create_proof(shotProver, shotAcir, {
+                hash: boardHashes.bob,
+                hit: 1,
+                ships: boards.bob,
+                shot: shots.alice[0],
+            });
+            await (await game.connect(bob).turn(
+                gameIndex,
+                shots.bob[0],
+                proof
+            )).wait()
 
-        //     // Verify proof locally
-        //     await verify_proof(boardVerifier, proof);
+            // Create proof of Bob's shot on Alice's board
+            proof = await create_proof(shotProver, shotAcir, {
+                hash: boardHashes.alice,
+                hit: 0, // produces a miss on this board config
+                ships: boards.alice,
+                shot: shots.bob[3], // use a shot different than bob registered
+            });
 
-
-        //     // Prove on-chain hash is of valid board configuration for Bob
-        //     await (await game.connect(bob).joinGame(
-        //         gameIndex,
-        //         proof
-        //     )).wait()
-        // });
-
-        // it("opening shot", async () => {
-        //     // Alice takes first turn in game with opening shot. No proof needed
-        //     await (await game.connect(alice).firstTurn(gameIndex, [1, 0])).wait()
-        // });
-
-        // it("Bob turn fails when not using alice's ")
+            // Transaction should fail since bob is not using registered board commitment
+            expect(game.connect(alice).turn(
+                gameIndex,
+                shots.alice[1], // Returning fire / next shot to register (not part of proof)
+                proof
+            )).to.be.revertedWith('Wrong shot coordinates');            
+        })
     })
 });
