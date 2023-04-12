@@ -98,18 +98,47 @@ contract BattleshipGame is IBattleshipGame {
         // check valid game
         Game storage game = games[_game];
         require(game.nonce != 0, "!turn");
+        // insert board commitment and previous shot into proof
 
-        // check proof uses player's board commitment
-        require(
-            checkCommitment(_proof, game.boards[game.nonce % 2]),
-            "!commitment"
-        );
+        assembly {
+            // nonce is 5th slot in game struct, so add 128 to game slot
+            let nonce := sload(add(game.slot, 128)) // load game.nonce
 
-        // check proof uses previous shot
-        require(
-            checkShot(_proof, game.shots[game.nonce - 1]),
-            "Wrong shot coordinates"
-        );
+            // get board commitment for current player
+            // games.board[] is 2nd slots in game struct, so add 64 bytes to game slot
+            // nonce % 2 * 32 returns slot for 0th or 1st in board array
+            let commitment := sload(add(add(game.slot, 64), mul(mod(nonce, 2), 32)))
+
+            // get shot array slot from previous turn (nonce - 1)
+            // games.shots[] is 5th slots in game struct, so add 160 bytes to game slot
+            // use memory scratch space to make keccak hash of key and map slot to get value slot
+            mstore(0x00, sub(nonce, 1))
+            mstore(0x20, add(game.slot, 160))
+            let shotSlot := keccak256(0x00, 0x40)
+
+            // get the x and y values of of the shot
+            // x is 0th element and is already stored at shotSlot memory address
+            // y is 1st element/ 1 slot after x, so add 32 bytes to shotSlot
+            let x := sload(shotSlot)
+            let y := sload(add(shotSlot, 32))
+
+            // insert public inputs for board proof to constrain board commitment and previous shot
+            mstore(add(_proof, 32), commitment)
+            mstore(add(_proof, 96), x)
+            mstore(add(_proof, 128), y)
+        }
+
+        // // check proof uses player's board commitment
+        // require(
+        //     checkCommitment(_proof, game.boards[game.nonce % 2]),
+        //     "!commitment"
+        // );
+
+        // // check proof uses previous shot
+        // require(
+        //     checkShot(_proof, game.shots[game.nonce - 1]),
+        //     "Wrong shot coordinates"
+        // );
 
         // check proof
         require(sv.verify(_proof), "!shot_proof");
