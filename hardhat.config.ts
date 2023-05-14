@@ -74,9 +74,9 @@ const config: HardhatUserConfig = {
   },
   networks,
   solidity: {
-    version: '0.8.10',
+    version: '0.8.20',
     settings: {
-      evmVersion: 'london',
+      evmVersion: 'shanghai',
       optimizer: { enabled: true, runs: 5000 },
     },
   },

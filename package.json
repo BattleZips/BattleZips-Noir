@@ -1,11 +1,11 @@
 {
   "name": "BattleZips-Noir",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Noir implementation of BattleZips.",
   "main": "index.ts",
   "scripts": {
     "deploy": "hardhat run scripts/deploy.ts --network goerli",
-    "generate-contracts": "hardhat run scripts/generateContracts.ts",
+    "generate-contracts": "./scripts/generateContracts.sh",
     "generate-frontend-files": "ts-node scripts/generateFrontendData.ts",
     "generate-witnesses": "ts-node scripts/generateBoardWitness.ts && ts-node scripts/generateShotWitness.ts",
     "test-circuit": "hardhat test test/circuit.ts",

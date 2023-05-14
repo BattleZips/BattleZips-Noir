@@ -46,7 +46,8 @@ describe('Play entire BattleZip game', async () => {
         await (await game.connect(bob).turn(
             gameIndex,
             shots.bob[aliceNonce - 1], // Returning fire / next shot to register (not part of proof)
-            proof
+            proof,
+            abi.hit
         )).wait()
 
         // Shot is proved to be a miss
@@ -70,7 +71,8 @@ describe('Play entire BattleZip game', async () => {
         await (await game.connect(alice).turn(
             gameIndex,
             shots.alice[aliceNonce], // Returning fire / next shot to register (not part of proof)
-            proof
+            proof,
+            abi.hit
         )).wait()
     }
 
