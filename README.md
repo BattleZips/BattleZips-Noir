@@ -141,7 +141,7 @@ nargo prove <arbitray_file_name>
 ```
 
 this will generate an proof file in the form `<arbitray_file_name>.proof`. To verify the proof run:
-
+ 
 ```
 nargo verify <arbitray_file_name>
 ```
