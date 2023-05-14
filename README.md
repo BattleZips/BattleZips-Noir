@@ -100,15 +100,25 @@ This circuit will first ensure that the shot coordinates fall within the bounds 
 
 The following steps will help guide you through how you would set up BattleZips-Noir from scratch, and can be used for reference when setting up arbitrary circuits
 
-### 1. Download Nargo the Noir CLI Tool (Optional) <a name="setup-1" />
+### 1. Download Nargo the Noir CLI Tool <a name="setup-1" />
 
-#### Option 1: Binaries
+This version of BattleZips-Noir depends on UltraPlonk (Noir v0.5.x)
 
-[See guide to install binaries here](https://noir-lang.github.io/book/getting_started/nargo/installation.html#option-1-binaries)
+```
+# install noirup
+curl -L https://raw.githubusercontent.com/noir-lang/noirup/main/install | bash
 
-#### Option 2: Source
+# ensure noirup is in path FOR LINUX
+source ~/.bashrc
+# ensure noirup is in path FOR MAC
+source ~/.zshrc
 
-[See guide to install from source here](https://noir-lang.github.io/book/getting_started/nargo/installation.html#option-2-compile-from-source)
+# install nargo with ultraplonk
+noirup -v 0.5.0
+
+# check that you have the correct version of Nargo installed (may need to run source command again)
+nargo --version # should output 0.5.0
+```
 
 ### 2. Clone Repository <a name="setup-2" />
 

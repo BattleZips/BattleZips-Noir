@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.6.0;
+pragma solidity >=0.8.0;
 
-import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./IVerifier.sol";
 
 /**
@@ -124,9 +123,13 @@ abstract contract IBattleshipGame is ERC2771Context {
      * Start a new board by uploading a valid board hash
      * @dev modifier canPlay
      *
-     * @param _proof bytes calldata - zk proof of valid board
+     * @param _proof bytes - zk proof of valid board
+     * @param _commitment bytes32 - commitment to board configuration
      */
-    function newGame(bytes calldata _proof) external virtual;
+    function newGame(
+        bytes calldata _proof,
+        bytes32 memory _commitment
+    ) external virtual;
 
     /**
      * Forfeit a game in the middle of playing of leave a game prior to starting
@@ -141,9 +144,14 @@ abstract contract IBattleshipGame is ERC2771Context {
      * @dev modifier canPlay joinable
      *
      * @param _game uint256 - the nonce of the game to join
-     * @param _proof bytes calldata - zk proof of valid board
+     * @param _proof bytes - zk proof of valid board,
+     * @param _commitment bytes32 - commitment to board configuration
      */
-    function joinGame(uint256 _game, bytes calldata _proof) external virtual;
+    function joinGame(
+        uint256 _game,
+        bytes calldata _proof,
+        bytes32 memory _commitment
+    ) external virtual;
 
     /**
      * Player 0 can makes first shot without providing proof
@@ -153,7 +161,11 @@ abstract contract IBattleshipGame is ERC2771Context {
      * @param _game uint256 - the nonce of the game to take turn on
      * @param _shot uint256[2] - the (x,y) coordinate to fire at
      */
-    function firstTurn(uint256 _game, uint256[2] memory _shot) external virtual;
+    function firstTurn(
+        uint256 _game,
+        bool _hit,
+        uint256[2] memory _shot
+    ) external virtual;
 
     /**
      * Play turn in game
@@ -168,7 +180,8 @@ abstract contract IBattleshipGame is ERC2771Context {
     function turn(
         uint256 _game,
         uint256[2] memory _next,
-        bytes calldata _proof
+        bytes calldata _proof,
+        bool _hit
     ) external virtual;
 
     /**

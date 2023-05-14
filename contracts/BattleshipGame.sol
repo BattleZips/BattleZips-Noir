@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.6.0;
+pragma solidity >=0.8.0;
 
 import "./IBattleshipGame.sol";
 
@@ -19,35 +19,33 @@ contract BattleshipGame is IBattleshipGame {
         address _sv
     ) ERC2771Context(_forwarder) {
         trustedForwarder = _forwarder;
-        bv = IBoardVerifier(_bv);
-        sv = IShotVerifier(_sv);
+        bv = IVerifier(_bv);
+        sv = IVerifier(_sv);
     }
 
     /// FUNCTIONS ///
 
-    function newGame(bytes memory _proof) external override canPlay {
+    function newGame(
+        bytes calldata _proof,
+        bytes32 calldata _commitment
+    ) external override canPlay {
         // verify integrity of board configuration
-        require(bv.verify(_proof), "Invalid Board Config!");
-        // extract board commitment from public inputs to enforce shot proof inputs against
-        bytes32 commitment;
-        assembly {
-            commitment := mload(add(_proof, 32))
-        }
+        require(bv.verify(_proof, [_commitment]), "Invalid Board Config!");
         // instantate new game storage
         gameIndex++;
         games[gameIndex].status = GameStatus.Started;
-        games[gameIndex].participants[0] = _msgSender();
+        games[gameIndex].participants[0] = msg.sender;
         games[gameIndex].boards[0] = commitment;
-        playing[_msgSender()] = gameIndex;
+        playing[msg.sender] = gameIndex;
         // mark game as started
-        emit Started(gameIndex, _msgSender());
+        emit Started(gameIndex, msg.sender);
     }
 
     function leaveGame(uint256 _game) external override isPlayer(_game) {
         Game storage game = games[_game];
         // Check if game has been started with two players. If so then forfeit
         if (game.status == GameStatus.Joined) {
-            game.winner = _msgSender() == game.participants[0]
+            game.winner = msg.sender == game.participants[0]
                 ? game.participants[1]
                 : game.participants[0];
             playing[game.participants[0]] = 0;
@@ -55,33 +53,30 @@ contract BattleshipGame is IBattleshipGame {
             emit Won(game.winner, _game);
         } else {
             playing[game.participants[0]] = 0;
-            emit Left(_msgSender(), _game);
+            emit Left(msg.sender, _game);
         }
         game.status = GameStatus.Over;
     }
 
     function joinGame(
         uint256 _game,
-        bytes memory _proof
+        bytes calldata _proof,
+        bytes32 calldata _commitment
     ) external override canPlay joinable(_game) {
-        require(bv.verify(_proof), "Invalid Board Config!");
-        // extract board commitment from public inputs to enforce shot proof inputs against
-        bytes32 commitment;
-        assembly {
-            commitment := mload(add(_proof, 32))
-        }
+        // verify integrity of board configuration
+        require(bv.verify(_proof, [_commitment]), "Invalid Board Config!");
         // update game storage to join game
-        games[_game].participants[1] = _msgSender();
+        games[_game].participants[1] = msg.sender;
         games[_game].boards[1] = commitment;
         games[_game].status = GameStatus.Joined;
-        playing[_msgSender()] = _game;
+        playing[msg.sender] = _game;
         // mark game as started
-        emit Joined(_game, _msgSender());
+        emit Joined(_game, msg.sender);
     }
 
     function firstTurn(
         uint256 _game,
-        uint256[2] memory _shot
+        uint256[2] calldata _shot
     ) external override myTurn(_game) {
         Game storage game = games[_game];
         require(game.nonce == 0, "!Turn1");
@@ -92,33 +87,27 @@ contract BattleshipGame is IBattleshipGame {
 
     function turn(
         uint256 _game,
-        uint256[2] memory _next,
-        bytes memory _proof
+        uint256[2] calldata _next,
+        bytes calldata _proof,
+        bool _hit
     ) external override myTurn(_game) nullified(_game, _next) {
         // check valid game
         Game storage game = games[_game];
         require(game.nonce != 0, "!turn");
 
-        // check proof uses player's board commitment
-        require(
-            checkCommitment(_proof, game.boards[game.nonce % 2]),
-            "!commitment"
-        );
-
-        // check proof uses previous shot
-        require(
-            checkShot(_proof, game.shots[game.nonce - 1]),
-            "Wrong shot coordinates"
-        );
-
         // check proof
-        require(sv.verify(_proof), "!shot_proof");
-
-        // get constrained hit/miss
-        bool hit;
-        assembly {
-            hit := mload(add(_proof, 64))
-        }
+        require(
+            sv.verify(
+                _proof,
+                [
+                    game.boards[game.nonce % 2],
+                    bytes32(hit),
+                    bytes32(game.shots[game.nonce - 1][0]),
+                    bytes32(game.shots[game.nonce - 1][1])
+                ]
+            ),
+            "!shot_proof"
+        );
 
         // increment hit nonce if hit
         if (hit) game.hitNonce[(game.nonce - 1) % 2]++;
@@ -187,44 +176,5 @@ contract BattleshipGame is IBattleshipGame {
         playing[games[_game].participants[0]] = 0;
         playing[games[_game].participants[1]] = 0;
         emit Won(game.winner, _game);
-    }
-
-    /**
-     * Checks that the commitment in a proof is the same as a given commitment
-     * @dev board commitment is stored in the first 32 bytes of a proof string
-     *
-     * @param _proof bytes - the proof string to extract public inputs from
-     * @param _commitment bytes32 - the commitment to compare against extracted value
-     * @return ok bool - true if commitments match
-     */
-    function checkCommitment(
-        bytes memory _proof,
-        bytes32 _commitment
-    ) internal returns (bool ok) {
-        assembly {
-            let commitment := mload(add(_proof, 32))
-            ok := eq(commitment, _commitment)
-        }
-    }
-
-    /**
-     * Checks that the commitment in a proof is the same as a given commitment
-     * @dev board commitment is stored in the 3rd (x) and 4th (y) 32 byte slots of a proof string
-     *
-     * @param _proof bytes - the proof string to extract public inputs from
-     * @param shot uint256[2] - the shot to compare against extracted values
-     * @return ok bool - true if commitments match
-     */
-    function checkShot(
-        bytes memory _proof,
-        uint256[2] memory shot
-    ) internal returns (bool ok) {
-        assembly {
-            let x := mload(add(_proof, 96))
-            let y := mload(add(_proof, 128))
-            let x_ok := eq(x, mload(shot))
-            let y_ok := eq(y, mload(add(shot, 32)))
-            ok := and(y_ok, x_ok)
-        }
     }
 }
