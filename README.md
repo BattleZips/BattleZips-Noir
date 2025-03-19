@@ -41,7 +41,6 @@ This repo was created using the [nplate](https://github.com/whitenois3/nplate) N
 Check out the following links to provide feedback or ask questions!
 
 - [Aztec Discord](https://discord.com/channels/563037431604183070/)
-- [BattleZips Discord](https://discord.gg/2dkzdDwq)
 
 ## Related Repositories <a name="related-repositories" />
 
